@@ -1,0 +1,11 @@
+{
+  "clusters": [
+    { "group_id": "G1", "group_title": "订单中心", "member_ids": ["E1"], "tier": "related" },
+    { "group_id": "G2", "group_title": "支付链路", "member_ids": ["E2"], "tier": "related" },
+    { "group_id": "G3", "group_title": "大促保障", "member_ids": ["E3"], "tier": "related" },
+    { "group_id": "G4", "group_title": "会员与营销", "member_ids": ["E4", "E5"], "tier": "related" },
+    { "group_id": "G5", "group_title": "企业信息化", "member_ids": ["E6", "E7"], "tier": "related" },
+    { "group_id": "G6", "group_title": "市场推广", "member_ids": ["E8"], "tier": "other" }
+  ],
+  "omitted_ids": []
+}

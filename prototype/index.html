@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>TrueFit 简旨 — 简历智能瘦身</title>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
+<style>
+/* ============ Base ============ */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --primary:#5e6ad2;
+  --primary-hover:#4f5cc0;
+  --primary-soft:#eef0fc;
+  --text:#1f2329;
+  --text-2:#4b5563;
+  --muted:#8a8f98;
+  --muted-2:#b0b5bd;
+  --border:#e5e7eb;
+  --border-strong:#d6d9de;
+  --bg:#f6f6f8;
+  --panel:#ffffff;
+  --green:#16a34a;
+  --green-soft:#e8f7ee;
+  --amber:#b45309;
+  --amber-soft:#fdf3e3;
+  --red:#dc2626;
+  --core:#5e6ad2;
+  --related:#d97706;
+  --other:#8a8f98;
+  --radius:10px;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
+  --shadow-lg:0 12px 40px rgba(16,24,40,.16);
+}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  color:var(--text);
+  background:var(--bg);
+  font-size:14px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  min-width:1180px;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea{font-family:inherit}
+::selection{background:#dfe3fb}
+.hidden{display:none!important}
+
+/* ============ Common ============ */
+.app-header{
+  height:54px;background:var(--panel);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;flex:none;
+}
+.logo{display:flex;align-items:baseline;gap:8px;font-weight:700;font-size:17px;letter-spacing:.2px}
+.logo .mark{color:var(--primary)}
+.logo .sub{font-size:12px;color:var(--muted);font-weight:500}
+.text-link{color:var(--primary);font-size:13px;font-weight:500}
+.text-link:hover{text-decoration:underline}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;font-size:14px;font-weight:500;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--primary);color:#fff;padding:10px 18px}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-secondary{background:#fff;color:var(--text);border:1px solid var(--border-strong);padding:10px 16px}
+.btn-secondary:hover{background:#f4f4f6;border-color:#c8ccd4}
+.btn-ghost{color:var(--text-2);padding:8px 12px}
+.btn-ghost:hover{background:#f1f1f4;border-radius:8px}
+.btn:disabled{cursor:not-allowed}
+
+/* ============ Home ============ */
+#view-home{flex-direction:column;height:100vh}
+.home-main{flex:1;display:flex;flex-direction:column;align-items:center;padding:46px 40px 60px;overflow:auto}
+.home-hero{text-align:center;margin-bottom:34px}
+.home-hero h1{font-size:26px;font-weight:700;letter-spacing:.3px}
+.home-hero p{color:var(--muted);margin-top:8px;font-size:14px}
+.upload-row{display:flex;gap:28px;width:100%;max-width:1040px}
+.upload-card{
+  flex:1;background:var(--panel);border:1px solid var(--border);border-radius:14px;
+  box-shadow:var(--shadow);padding:22px;display:flex;flex-direction:column;height:480px;
+}
+.upload-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.upload-card-head h3{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.upload-card-head .tag{font-size:11px;padding:2px 8px;border-radius:20px;background:#f1f1f4;color:var(--muted)}
+.upload-card-head .tag.ok{background:var(--green-soft);color:var(--green)}
+.tabs{display:flex;gap:2px;background:#f1f1f4;border-radius:8px;padding:3px}
+.tabs button{padding:4px 12px;border-radius:6px;font-size:12.5px;color:var(--muted)}
+.tabs button.active{background:#fff;color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.08);font-weight:500}
+.dropzone{
+  flex:1;border:1.5px dashed var(--border-strong);border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  color:var(--muted);cursor:pointer;transition:.15s;padding:24px;text-align:center;
+}
+.dropzone:hover{border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
+.dropzone .dz-icon{font-size:30px;line-height:1}
+.dropzone .dz-main{font-size:14px;color:var(--text-2)}
+.dropzone .dz-sub{font-size:12px;color:var(--muted)}
+.paste-area{flex:1;display:flex;flex-direction:column;gap:8px}
+.paste-area textarea{
+  flex:1;width:100%;border:1px solid var(--border-strong);border-radius:10px;
+  padding:12px 14px;font-size:13px;line-height:1.7;resize:none;color:var(--text);outline:none;
+}
+.paste-area textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(94,106,210,.12)}
+.loaded-box{
+  flex:1;border:1px solid var(--border);border-radius:10px;background:#fbfbfc;padding:14px 16px;
+  display:flex;flex-direction:column;gap:10px;min-height:0;
+}
+.loaded-box .lb-top{display:flex;align-items:center;gap:10px}
+.loaded-box .lb-icon{width:34px;height:34px;border-radius:8px;background:var(--primary-soft);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:17px;flex:none}
+.loaded-box .lb-name{font-weight:600;font-size:13.5px;word-break:break-all}
+.loaded-box .lb-meta{font-size:12px;color:var(--muted)}
+.loaded-box .lb-actions{display:flex;gap:14px;flex-wrap:wrap}
+
+.generate-area{margin-top:36px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.gen-btns{display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap}
+.btn-generate{
+  height:50px;min-width:240px;padding:0 32px;font-size:16px;border-radius:12px;
+  background:var(--primary);color:#fff;font-weight:600;letter-spacing:1px;
+  box-shadow:0 4px 14px rgba(94,106,210,.3);transition:.18s;
+}
+/* 次按钮：自己给简历瘦身（与主按钮同行、同高，白底描边次要样式） */
+.btn-generate-2{
+  height:50px;min-width:200px;padding:0 26px;font-size:15px;border-radius:12px;
+  background:#fff;color:var(--text-2);font-weight:600;letter-spacing:1px;
+  border:1.5px solid var(--border-strong);
+  box-shadow:0 2px 8px rgba(16,24,40,.05);transition:.18s;
+}
+.btn-generate-2:hover:not(:disabled){
+  border-color:var(--primary);color:var(--primary);
+  transform:translateY(-1px);box-shadow:0 4px 12px rgba(94,106,210,.12);
+}
+.btn-generate-2:disabled{background:#f2f3f5;color:#a8adb7;border-color:#e6e7ea;box-shadow:none;cursor:not-allowed}
+.btn-generate:hover:not(:disabled){background:var(--primary-hover);transform:translateY(-1px);box-shadow:0 6px 18px rgba(94,106,210,.36)}
+/* 已生成未变：次色（白底蓝字蓝边），与主色区分但可点 */
+.btn-generate.view-mode{
+  background:#fff;color:var(--primary);
+  border:1.5px solid var(--primary);
+  box-shadow:0 2px 8px rgba(94,106,210,.12);
+}
+.btn-generate.view-mode:hover:not(:disabled){
+  background:var(--primary-soft);color:var(--primary);border-color:var(--primary);
+  transform:translateY(-1px);box-shadow:0 4px 12px rgba(94,106,210,.2);
+}
+.btn-generate:disabled{background:#e3e4e8;color:#a8adb7;box-shadow:none;border:none}
+.gen-hint{font-size:13px;color:var(--muted);min-height:20px}
+.gen-hint.warn{color:var(--amber)}
+.btn-wrap{position:relative}
+.tip{
+  position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%) translateY(4px);
+  background:#2b2f3a;color:#fff;font-size:12.5px;padding:7px 12px;border-radius:8px;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:.15s;z-index:60;
+}
+.tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#2b2f3a}
+.btn-wrap:hover .tip.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* header 入口按钮（替代悬浮浮窗） */
+.cfg-trigger{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;
+  background:var(--primary-soft);color:var(--primary);border:1px solid #dfe3fb;
+}
+.cfg-trigger:hover{background:#e2e6fb}
+.cfg-trigger.open{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* ============ Drawer ============ */
+.drawer-mask{position:fixed;inset:0;background:transparent;z-index:44}
+.drawer{
+  position:fixed;top:0;right:0;height:100vh;width:360px;background:var(--panel);z-index:45;
+  box-shadow:var(--shadow-lg);transform:translateX(100%);transition:transform .26s ease;
+  display:flex;flex-direction:column;
+}
+.drawer.open{transform:translateX(0)}
+.drawer-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex:none}
+.drawer-head h2{font-size:15.5px;font-weight:600}
+.drawer-head .x{color:var(--muted);font-size:18px;width:28px;height:28px;border-radius:6px}
+.drawer-head .x:hover{background:#f1f1f4;color:var(--text)}
+.drawer-body{flex:1;overflow-y:auto;padding:20px 22px 30px}
+.cfg-section{margin-bottom:30px}
+.cfg-section > .sec-title{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:1.5px;margin-bottom:12px;text-transform:uppercase}
+.dim-row{padding:12px 0;border-bottom:1px solid #f0f0f2}
+.dim-row:last-child{border-bottom:none}
+.dim-row.disabled{opacity:.45}
+.dim-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.dim-check{display:flex;align-items:center;gap:8px;flex:1;cursor:pointer;user-select:none}
+.dim-check input{width:15px;height:15px;accent-color:var(--primary);cursor:pointer}
+.dim-name{font-size:14px;font-weight:500}
+.dim-pct{font-size:13px;color:var(--primary);font-weight:600;min-width:42px;text-align:right}
+.dim-bottom{display:flex;align-items:center;gap:10px;padding-left:23px}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;flex:1;height:4px;border-radius:4px;
+  background:linear-gradient(to right,var(--primary) 0%,var(--primary) var(--fill,0%),#e4e5e9 var(--fill,0%),#e4e5e9 100%);
+  outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;
+  border:2px solid var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:pointer;
+}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid var(--primary);cursor:pointer}
+input[type=range]:disabled{cursor:not-allowed;background:#e9eaee;opacity:.8}
+input[type=range]:disabled::-webkit-slider-thumb{border-color:#b8bdc7;background:#f3f4f6}
+.score-input{
+  width:52px;padding:4px 6px;border:1px solid var(--border-strong);border-radius:6px;
+  font-size:12.5px;text-align:center;outline:none;
+}
+.score-input:focus{border-color:var(--primary)}
+.score-input:disabled{background:#f3f4f6;color:var(--muted);cursor:not-allowed}
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.preset-btn{
+  padding:9px 8px;border:1px solid var(--border-strong);border-radius:8px;font-size:13px;color:var(--text-2);
+  background:#fff;transition:.13s;position:relative;
+}
+.preset-btn:hover{border-color:var(--primary);color:var(--primary)}
+.preset-btn.active{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:500}
+.preset-scores{font-size:11px;color:var(--muted);margin-top:2px}
+.preset-btn.active .preset-scores{color:rgba(255,255,255,.75)}
+.cfg-note{font-size:12px;color:var(--muted);line-height:1.7;background:#f8f8fa;border-radius:8px;padding:10px 12px;margin-top:4px}
+
+/* ============ Result page ============ */
+.view-page{display:none;flex-direction:column;height:100vh}
+.view-page.active{display:flex}
+/* 结果页：报告展开时页面可滚动，两栏保持原高度 */
+#view-result .cols{flex:1;display:flex;flex-direction:column;min-height:0;gap:14px;padding:16px;background:var(--bg)}
+#view-result .cols-top{flex:1;min-height:0}
+#view-result.report-open .cols{overflow-y:auto}
+#view-result.report-open .cols-top{flex:none;height:calc(100vh - 80px);min-height:400px}
+.cols{display:flex;flex-direction:column;gap:14px;padding:16px;background:var(--bg)}
+.cols-top{display:flex;gap:14px;flex:1;min-height:0}
+.col{min-width:0;overflow-y:auto;background:var(--panel);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.col-original{flex:1}
+.col-slim{flex:3}
+.col-head{
+  position:sticky;top:0;z-index:5;margin-bottom:4px;padding:14px 20px 12px;
+  background:#fafbfd;border-bottom:1px solid var(--border);
+  border-radius:14px 14px 0 0;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex:none;
+}
+.col-head .ch-left{min-width:0}
+.col-head h2{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.col-head .desc{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+.col-head .col-btn{
+  padding:5px 12px;border-radius:7px;font-size:12.5px;font-weight:500;flex:none;
+  background:var(--primary-soft);color:var(--primary);border:1px solid #dfe3fb;
+}
+.col-head .col-btn:hover{background:#e2e6fb}
+.col-head .col-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.col-body{padding:18px 20px 40px}
+.col-slim{box-shadow:0 2px 10px rgba(16,24,40,.08)}
+.col-slim .col-body{background:#ffffff}
+.col-original .col-body{background:#F9FAFB}
+.col-slim .col-body{font-size:15px;line-height:1.5}
+.col-slim .sentence{font-size:15px;line-height:1.5;padding:4px 8px 4px 16px}
+.col-slim .exp-title{font-size:15.5px}
+.col-slim .exp-meta{font-size:12.5px}
+.col-original .col-body{font-size:13px;line-height:1.65}
+
+/* 收起左栏：收起后变窄条，展开按钮始终可见 */
+.col-original.collapsed{
+  flex:0 0 46px !important;min-width:46px;overflow:hidden;
+}
+.col-original.collapsed .col-head{
+  position:static;flex:1;flex-direction:column;align-items:center;justify-content:center;
+  padding:0;margin-bottom:0;border-bottom:none;border-radius:14px;
+}
+.col-original.collapsed .ch-left,
+.col-original.collapsed .col-body{display:none}
+.col-original.collapsed .collapse-btn{
+  writing-mode:vertical-rl;text-orientation:upright;
+  padding:12px 4px;font-size:12.5px;letter-spacing:2px;
+  border:1px solid var(--border);background:#fff;flex:none;
+}
+.col-original.collapsed .collapse-btn:hover{
+  border-color:var(--primary);color:var(--primary);background:var(--primary-soft);
+}
+
+/* 底部匹配报告模块 */
+.report-wrap{flex:none;background:var(--panel);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.report-summary{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px;text-align:center}
+.rs-score{font-size:30px;font-weight:700;color:var(--primary);line-height:1.2}
+.rs-score small{font-size:14px;color:var(--muted);font-weight:400}
+.rs-verdict{font-size:13px;color:var(--text-2);line-height:1.7;max-width:85%}
+.btn-toggle-report{
+  padding:8px 20px;border-radius:8px;font-size:13px;font-weight:500;flex:none;white-space:nowrap;
+  background:var(--primary-soft);color:var(--primary);border:1px solid #dfe3fb;cursor:pointer;margin-top:4px;
+}
+.btn-toggle-report:hover{background:#e2e6fb}
+.report-detail{border-top:1px solid var(--border);padding:18px 20px 30px;max-height:48vh;overflow-y:auto;background:#F9FAFB;font-size:13px;line-height:1.65}
+.report-detail.collapsed{display:none}
+
+/* 顶部提示行 */
+.match-banner{
+  flex:none;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:8px 20px;background:#fffbe8;border-bottom:1px solid #f0e6b8;
+  font-size:12.5px;color:#7a5a16;
+}
+.match-banner b{font-weight:600;color:#5b4509}
+
+/* 中栏双状态：预览态蓝色 / 编辑态绿色 + 蓝色虚线框 */
+.col-slim.editing{outline:2px dashed #5e6ad2;outline-offset:-2px}
+.col-slim .col-btn.edit-complete{background:var(--green-soft);color:var(--green);border-color:#c6ebd4}
+.col-slim .col-btn.edit-complete:hover{background:#dbf3e2}
+.col-slim .col-btn.edit-complete.active{background:var(--green);color:#fff;border-color:var(--green)}
+.col-slim .score-badge{
+  display:inline-flex;align-items:center;
+  font-size:11.5px;font-weight:600;
+  padding:2px 9px;border-radius:20px;
+  margin-left:8px;line-height:1.5;
+  border:1px solid rgba(94,106,210,.18);
+  cursor:default;transition:.15s;white-space:nowrap;
+}
+
+/* 导出按钮 */
+.export-btn{
+  padding:5px 12px;border-radius:7px;font-size:12.5px;font-weight:500;
+  background:#fff;color:var(--text-2);border:1px solid var(--border-strong);
+}
+.export-btn:hover{border-color:var(--primary);color:var(--primary)}
+.export-menu{
+  position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid var(--border);
+  border-radius:8px;box-shadow:var(--shadow-lg);padding:6px;min-width:140px;z-index:10;display:none;
+}
+.export-menu.show{display:block}
+.export-menu button{
+  display:block;width:100%;text-align:left;padding:7px 12px;font-size:13px;border-radius:6px;color:var(--text-2);
+}
+.export-menu button:hover{background:var(--primary-soft);color:var(--primary)}
+
+/* 右栏：改动说明 / 补充建议 视觉分隔 */
+.rp-section{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.rp-section:last-child{margin-bottom:0}
+.rp-section h4{margin-top:0}
+.rp-divider{height:1px;background:linear-gradient(to right,transparent,var(--border-strong),transparent);margin:18px 0}
+
+/* op 标签中文化 + 图标 */
+.op-tag.cn-verbatim{background:#eef2f4;color:#5b7083}
+.op-tag.cn-compress{background:#e8f0fe;color:#2f63c4}
+.op-tag.cn-reword{background:#f3e8fe;color:#8b3fd1}
+.op-tag.cn-merge{background:#e0f5f1;color:#0e8a74}
+.op-tag.cn-demote{background:#fdf3e3;color:#b45309}
+.op-tag.cn-reorder{background:#eef0fd;color:#5e6ad2}
+.op-tag.cn-omit{background:#fdeaea;color:#dc2626}
+.op-tag.has-tip{cursor:pointer;position:relative}
+.op-tag .op-tip{
+  position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+  background:#2b2f3a;color:#fff;font-size:11.5px;padding:6px 10px;border-radius:6px;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:.12s;z-index:20;
+}
+.op-tag .op-tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#2b2f3a}
+.op-tag.has-tip:hover .op-tip{opacity:1}
+
+/* 收起按钮 */
+.collapse-btn{
+  padding:4px 10px;border-radius:6px;font-size:11.5px;color:var(--muted);
+  background:transparent;border:1px solid var(--border);
+  white-space:nowrap;flex:none;
+}
+.collapse-btn:hover{border-color:var(--primary);color:var(--primary)}
+
+/* left original */
+.res-name{font-size:18px;font-weight:700;margin-bottom:2px}
+.res-sub{font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.res-sec{margin-bottom:16px}
+.res-sec-title{font-size:12.5px;font-weight:600;color:var(--primary);letter-spacing:1px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid #efeff2}
+.res-entry{margin-bottom:9px}
+.res-entry .re-meta{font-weight:600;font-size:13px;margin-bottom:3px}
+.src{
+  display:block;font-size:13px;color:var(--text-2);line-height:1.75;
+  padding:1px 5px;margin:1px -5px;border-radius:5px;transition:background .12s;cursor:default;
+  white-space:pre-wrap;
+}
+.src.hl{background:rgba(94,106,210,.16);color:var(--text)}
+.skill-line{font-size:12.5px;color:var(--text-2);line-height:1.8}
+.skill-line b{font-weight:600;color:var(--text)}
+
+/* middle slim */
+.tier-header{position:relative;display:flex;align-items:center;justify-content:flex-end;margin:26px 0 14px;min-height:30px}
+.tier-header:first-child{margin-top:4px}
+.tier-header .t-name{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  font-size:18px;letter-spacing:2px;white-space:nowrap;color:#1f2329;
+}
+.tier-header .t-count{font-size:11.5px;color:var(--muted)}
+.tier-core .t-name{font-weight:700}
+.tier-related .t-name{font-weight:400}
+.tier-other .t-name{font-weight:400;color:var(--other)}
+.exp-block{
+  border:1px solid var(--border);border-radius:10px;padding:13px 15px;margin-bottom:12px;background:#fff;
+  transition:border-color .15s,box-shadow .15s;
+}
+.exp-block:hover{box-shadow:var(--shadow)}
+.exp-title{font-size:14.5px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tier-chip{font-size:10.5px;padding:1px 8px;border-radius:20px;font-weight:500}
+.tier-chip.core{background:#eef0fd;color:var(--core)}
+.tier-chip.related{background:#f2f4fe;color:#7881d4}
+.tier-chip.other{background:#f1f1f4;color:var(--other)}
+.exp-meta{font-size:12px;color:var(--muted);margin:3px 0 9px}
+.sentence{
+  position:relative;font-size:13px;color:var(--text-2);line-height:1.75;
+  padding:3px 8px 3px 16px;margin:0 -8px;border-radius:7px;cursor:default;transition:background .12s;
+}
+.sentence::before{content:"";position:absolute;left:6px;top:12px;width:4px;height:4px;border-radius:50%;background:#c4c8d0}
+.sentence:hover{background:#f4f5fa}
+.sentence.hl{background:rgba(94,106,210,.16);color:var(--text)}
+.sentence::after{
+  content:attr(data-op-label);
+  position:absolute;right:8px;top:5px;font-size:10.5px;padding:0 7px;border-radius:20px;
+  background:#eef0f3;color:var(--muted);opacity:0;transition:.12s;pointer-events:none;
+}
+.sentence:hover::after{opacity:1}
+.sentence.edited::before{background:var(--green)}
+.sentence.edited::after{
+  content:"user_edited";background:var(--green-soft);color:var(--green);opacity:1;
+}
+.editing .sentence{outline:1px dashed transparent;cursor:text}
+.editing .sentence:hover::after,.editing .sentence:focus::after{opacity:0}
+.editing .sentence.edited:hover::after{opacity:1}
+.editing .sentence:hover,.editing .sentence:focus{outline-color:var(--primary);background:#fff}
+.edit-banner{
+  display:none;background:var(--primary-soft);border:1px solid #dfe3fb;color:#4349b8;
+  font-size:12.5px;padding:8px 14px;border-radius:8px;margin-bottom:12px;
+}
+.editing .edit-banner{display:block}
+.sortable-ghost{opacity:.4!important;background:#eef0fc!important}
+.sortable-chosen{cursor:grabbing}
+.sortable-drag{opacity:1!important;box-shadow:var(--shadow-lg)!important;transform:rotate(0)!important}
+.editing .exp-block{cursor:grab}
+.editing .exp-block:active{cursor:grabbing}
+.editing .exp-block .sentence{cursor:text}
+
+/* ========== 上传区文本编辑 ========== */
+.lb-preview-wrap{position:relative;flex:1;min-height:0;display:flex;flex-direction:column}
+.lb-preview{
+  flex:1;background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 12px;
+  font-size:12.5px;color:var(--text-2);line-height:1.7;overflow-y:auto;white-space:pre-wrap;min-height:0;
+}
+.lb-preview.scrollable{overflow-y:auto}
+.lb-preview[contenteditable="true"]{
+  background:#fffdf7;border-color:var(--primary);outline:none;
+  box-shadow:0 0 0 3px rgba(94,106,210,.10);
+}
+.lb-preview.edited-text{background:#fffdf7;border-color:#f0d98c}
+.lb-edit-btn{
+  margin-left:auto;flex:none;
+  font-size:12px;padding:3px 10px;border-radius:6px;background:#fff;border:1px solid var(--border-strong);
+  color:var(--text-2);box-shadow:0 1px 2px rgba(0,0,0,.05);
+}
+.lb-edit-btn:hover{border-color:var(--primary);color:var(--primary)}
+.lb-edit-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.lb-edit-meta{font-size:11.5px;color:var(--muted);margin-top:6px}
+.paste-area .paste-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.paste-clip-btn{
+  font-size:12.5px;padding:4px 10px;border-radius:7px;border:1px solid var(--border-strong);
+  background:#fff;color:var(--text-2);
+}
+.paste-clip-btn:hover{border-color:var(--primary);color:var(--primary)}
+.sample-row{display:flex;gap:28px;width:100%;max-width:1040px;margin-top:14px}
+.sample-row .spacer{flex:1;display:flex;justify-content:flex-end}
+.card-sample-row{flex:none;display:flex;justify-content:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)}
+.card-sample-row .btn{padding:7px 14px;font-size:12.5px}
+
+/* right report */
+.rp-total{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+.rp-score-ring{font-size:30px;font-weight:700;color:var(--primary);line-height:1}
+.rp-score-ring small{font-size:13px;color:var(--muted);font-weight:400}
+.rp-total .rp-verdict{font-size:12.5px;color:var(--text-2);line-height:1.7}
+.rp-block{margin-bottom:26px;padding-left:12px}
+.rp-block:last-child{margin-bottom:0}
+.rp-block h4{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.rp-block h4::before{content:"";width:3px;height:14px;border-radius:2px}
+.rp-block.hit h4::before{background:var(--green)}
+.rp-block.miss h4::before{background:var(--amber)}
+.rp-block h4 .blk-icon{font-size:14px;line-height:1}
+.dim-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12.5px}
+.dim-bar-row .db-name{width:34px;color:var(--text-2)}
+.dim-bar-row .db-track{flex:1;height:6px;background:#eef0f3;border-radius:4px;overflow:hidden}
+.dim-bar-row .db-fill{height:100%;background:var(--primary);border-radius:4px}
+.dim-bar-row .db-val{width:52px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.match-item{display:flex;gap:10px;padding:11px 0;border-bottom:1px dashed #efeff2;font-size:12.5px;line-height:1.8;word-break:break-word}
+.match-item:last-child{border-bottom:none}
+.match-dot{width:8px;height:8px;border-radius:50%;margin-top:8px;flex:none}
+.match-item.hit .match-dot{background:var(--green)}
+.match-item.miss .match-dot{background:var(--amber)}
+.match-item .mi-req{font-weight:600;flex:none}
+.match-item .mi-ev{color:var(--muted)}
+.change-item{display:flex;gap:9px;padding:8px 0;border-bottom:1px dashed #efeff2;font-size:12.5px;line-height:1.65}
+.change-item:last-child{border-bottom:none}
+.op-tag{flex:none;font-size:10.5px;padding:1px 7px;border-radius:5px;height:fit-content;margin-top:2px;font-weight:500}
+.op-tag.verbatim{background:#eef2f4;color:#5b7083}
+.op-tag.compress{background:#e8f0fe;color:#2f63c4}
+.op-tag.reword{background:#f3e8fe;color:#8b3fd1}
+.op-tag.merge{background:#e0f5f1;color:#0e8a74}
+.op-tag.demote{background:#fdf3e3;color:#b45309}
+.op-tag.reorder{background:#eef0fd;color:#5e6ad2}
+.op-tag.omit{background:#fdeaea;color:#dc2626}
+.sug-list{list-style:none;counter-reset:sug}
+.sug-list li{counter-increment:sug;position:relative;padding:7px 0 7px 26px;font-size:12.5px;color:var(--text-2);line-height:1.65}
+.sug-list li::before{
+  counter-increment:none;content:counter(sug);position:absolute;left:0;top:8px;
+  width:18px;height:18px;border-radius:50%;background:var(--primary-soft);color:var(--primary);
+  font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;
+}
+/* ============ 编辑页（经历整理：勾选 / 删除 / 排序 / 合并） ============ */
+#view-edit .drag-main{flex:1;overflow-y:auto;padding:24px 40px 110px}
+.drag-wrap{max-width:780px;margin:0 auto}
+.edit-page-title{font-size:19px;font-weight:700;margin-bottom:2px}
+.drag-hint{font-size:13px;color:var(--muted);margin:4px 0 16px;line-height:1.7}
+.edit-toolbar{
+  max-width:780px;margin:0 auto 14px;display:flex;align-items:center;gap:14px;
+}
+.ec-selectall,.ec-check{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-2);cursor:pointer;user-select:none;flex:none}
+.ec-selectall input,.ec-check input{width:15px;height:15px;accent-color:var(--primary);cursor:pointer}
+.ec-count{font-size:12.5px;color:var(--muted)}
+#btn-merge-group:disabled{opacity:.5;cursor:not-allowed}
+.drag-card{
+  background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px 14px 12px;
+  margin-bottom:10px;display:flex;gap:10px;box-shadow:var(--shadow);
+  transition:border-color .15s,box-shadow .15s,opacity .15s,background .15s;position:relative;
+}
+.drag-card:hover{border-color:var(--primary)}
+.drag-card.dragging{opacity:.4}
+.drag-card.leader{padding-left:10px}
+.drag-card.unchecked{opacity:.5;background:#fafafa}
+.drag-grip{color:var(--muted-2);cursor:grab;display:flex;align-items:center;font-size:17px;letter-spacing:-2px;flex:none;padding:0 2px}
+.drag-body{flex:1;min-width:0}
+.drag-card-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.drag-title{font-size:14.5px;font-weight:600}
+.drag-score{font-size:12px;color:var(--muted)}
+.drag-role{font-size:12.5px;color:var(--text-2);margin:4px 0 2px}
+.drag-actions{font-size:12px;color:var(--muted);line-height:1.6}
+.drag-del{color:var(--muted-2);font-size:15px;width:28px;height:28px;border-radius:7px;flex:none}
+.drag-del:hover{background:#fdeaea;color:var(--red)}
+/* 合并组标记 / 拖拽合并落点 */
+.ec-gbadge{font-size:11px;color:var(--primary);background:var(--primary-soft);border:1px solid #dfe3fb;padding:1px 8px;border-radius:20px;white-space:nowrap}
+.drag-card.leader.drop-target{
+  border-color:var(--primary);background:var(--primary-soft);
+  box-shadow:0 0 0 3px rgba(94,106,210,.15);
+}
+.drag-card.leader.drop-target::after{
+  content:'松开即可合并到该经历';position:absolute;top:-11px;right:14px;z-index:5;
+  background:var(--primary);color:#fff;font-size:11px;padding:2px 10px;border-radius:20px;white-space:nowrap;
+}
+/* 组成员卡（嵌在 leader 卡内，不可拖，只能移出） */
+.ec-members{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);display:flex;flex-direction:column;gap:8px}
+.drag-card.member{background:#f8f9fc;border-style:dashed;margin-bottom:0;padding:10px 12px}
+.drag-card.member:hover{border-color:var(--border-strong)}
+.drag-card.member .drag-role{margin-top:3px}
+.ec-out{
+  font-size:11.5px;color:var(--muted);border:1px solid var(--border);border-radius:6px;
+  padding:3px 9px;height:fit-content;align-self:center;flex:none;background:#fff;white-space:nowrap;
+}
+.ec-out:hover{border-color:var(--primary);color:var(--primary)}
+.ec-ungroup{margin-top:9px;font-size:12px;color:var(--primary);background:#fff;border:1px solid #dfe3fb;border-radius:7px;padding:5px 12px;width:fit-content}
+.ec-ungroup:hover{background:var(--primary-soft)}
+.deleted-zone{margin-top:26px;border:1.5px dashed var(--border-strong);border-radius:12px;padding:16px 18px;min-height:90px}
+.deleted-zone h4{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.deleted-zone .drag-card{background:#fafafa;opacity:.85;margin-bottom:8px}
+#edit-trash{display:flex;flex-direction:column;gap:0}
+.drag-restore{color:var(--primary);font-size:12px;padding:4px 10px;border:1px solid #dfe3fb;border-radius:7px;flex:none;align-self:center;white-space:nowrap}
+.drag-restore:hover{background:var(--primary-soft)}
+.drag-footer{
+  position:sticky;bottom:0;background:rgba(250,250,252,.92);backdrop-filter:blur(6px);
+  border-top:1px solid var(--border);padding:14px 40px;display:flex;justify-content:flex-end;align-items:center;gap:12px;flex:none;
+}
+#edit-foot-hint{flex:1;font-size:12.5px;color:var(--muted)}
+/* 中栏：合并组成员的展示块 */
+.slim-member{margin:10px -4px 2px;padding:8px 10px 6px;border-top:1px dashed var(--border);background:#fafbfe;border-radius:8px}
+.sm-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px}
+.sm-name{font-size:13.5px;font-weight:600}
+.sm-time{font-size:11.5px;color:var(--muted);font-weight:400}
+
+/* loading */
+.loading-mask{
+  position:fixed;inset:0;background:rgba(246,246,248,.72);backdrop-filter:blur(2px);
+  z-index:100;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;
+}
+.loading-mask.show{display:flex}
+.spinner{width:38px;height:38px;border:3px solid #dfe3fb;border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-mask .lm-txt{font-size:14px;color:var(--text-2)}
+
+/* Toast */
+.toast{
+  position:fixed;top:80px;left:50%;transform:translateX(-50%);
+  background:#2b2f3a;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;
+  z-index:200;opacity:0;pointer-events:none;transition:.2s;
+}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- ================= 屏1：首页 ================= -->
+<div id="view-home" class="view-page active">
+  <header class="app-header">
+    <div class="logo"><span class="mark">TrueFit</span><span>简旨</span><span class="sub">简历智能瘦身 · 原型</span></div>
+    <button class="cfg-trigger" id="cfg-trigger"><span>⚙</span>进入瘦身配置</button>
+  </header>
+
+  <div class="home-main">
+    <div class="home-hero">
+      <h1>按目标岗位，给简历瘦身</h1>
+      <p>上传完整简历、目标 JD，调整配置，完成简历瘦身。</p>
+    </div>
+
+    <div class="upload-row">
+      <!-- Resume -->
+      <section class="upload-card" id="card-resume">
+        <div class="upload-card-head">
+          <h3>📄 简历 Resume <span class="tag" id="resume-tag">未上传</span></h3>
+          <div class="tabs" data-panel="resume">
+            <button data-mode="file" class="active">上传文件</button>
+            <button data-mode="paste">粘贴文本</button>
+          </div>
+        </div>
+        <div class="dropzone" id="resume-drop">
+          <div class="dz-icon">📎</div>
+          <div class="dz-main">点击选择文件，或将文件拖到此处</div>
+          <div class="dz-sub">支持 PDF / Word / Markdown / TXT（原型中 TXT/MD 可直接读取）</div>
+          <input type="file" class="hidden" id="resume-file" accept=".txt,.md,.markdown,.doc,.docx,.pdf">
+        </div>
+        <div class="paste-area hidden">
+          <div class="paste-toolbar">
+            <span style="font-size:12.5px;color:var(--muted)">将简历全文粘贴到下方，或一键读取剪切板：</span>
+            <button class="paste-clip-btn" data-clip="resume">📋 粘贴剪切板</button>
+          </div>
+          <textarea id="resume-text" placeholder="将简历全文粘贴到这里…"></textarea>
+        </div>
+        <div class="loaded-box hidden" id="resume-loaded">
+          <div class="lb-top">
+            <div class="lb-icon">📄</div>
+            <div>
+              <div class="lb-name" id="resume-lb-name"></div>
+              <div class="lb-meta" id="resume-lb-meta"></div>
+            </div>
+            <button class="lb-edit-btn" data-edit="resume">✎ 编辑</button>
+          </div>
+          <div class="lb-preview-wrap">
+            <div class="lb-preview scrollable" id="resume-lb-preview"></div>
+            <div class="lb-edit-meta" id="resume-edit-meta"></div>
+          </div>
+          <div class="lb-actions">
+            <button class="text-link" id="resume-repick">重新选择</button>
+            <button class="text-link" id="resume-clear" style="color:var(--muted)">清空</button>
+          </div>
+        </div>
+        <div class="card-sample-row"><button class="btn btn-secondary" id="resume-sample">📄 载入示例简历</button></div>
+      </section>
+
+      <!-- JD -->
+      <section class="upload-card" id="card-jd">
+        <div class="upload-card-head">
+          <h3>🎯 岗位 JD <span class="tag" id="jd-tag">未上传</span></h3>
+          <div class="tabs" data-panel="jd">
+            <button data-mode="file" class="active">上传文件</button>
+            <button data-mode="paste">粘贴文本</button>
+          </div>
+        </div>
+        <div class="dropzone" id="jd-drop">
+          <div class="dz-icon">📎</div>
+          <div class="dz-main">点击选择文件，或将文件拖到此处</div>
+          <div class="dz-sub">支持 PDF / Word / Markdown / TXT（原型中 TXT/MD 可直接读取）</div>
+          <input type="file" class="hidden" id="jd-file" accept=".txt,.md,.markdown,.doc,.docx,.pdf">
+        </div>
+        <div class="paste-area hidden">
+          <div class="paste-toolbar">
+            <span style="font-size:12.5px;color:var(--muted)">将 JD 全文粘贴到下方，或一键读取剪切板：</span>
+            <button class="paste-clip-btn" data-clip="jd">📋 粘贴剪切板</button>
+          </div>
+          <textarea id="jd-text" placeholder="将 JD 全文粘贴到这里…"></textarea>
+        </div>
+        <div class="loaded-box hidden" id="jd-loaded">
+          <div class="lb-top">
+            <div class="lb-icon">🎯</div>
+            <div>
+              <div class="lb-name" id="jd-lb-name"></div>
+              <div class="lb-meta" id="jd-lb-meta"></div>
+            </div>
+            <button class="lb-edit-btn" data-edit="jd">✎ 编辑</button>
+          </div>
+          <div class="lb-preview-wrap">
+            <div class="lb-preview scrollable" id="jd-lb-preview"></div>
+            <div class="lb-edit-meta" id="jd-edit-meta"></div>
+          </div>
+          <div class="lb-actions">
+            <button class="text-link" id="jd-repick">重新选择</button>
+            <button class="text-link" id="jd-clear" style="color:var(--muted)">清空</button>
+          </div>
+        </div>
+        <div class="card-sample-row"><button class="btn btn-secondary" id="jd-sample">🎯 载入示例 JD</button></div>
+      </section>
+    </div>
+
+    <div class="generate-area">
+      <div class="gen-btns">
+        <div class="btn-wrap" id="gen-wrap">
+          <span class="tip" id="gen-tip"></span>
+          <button class="btn-generate" id="btn-generate" disabled>一键生成瘦身简历</button>
+        </div>
+        <div class="btn-wrap">
+          <span class="tip" id="manual-tip"></span>
+          <button class="btn-generate-2" id="btn-generate-manual" disabled>自己给简历瘦身</button>
+        </div>
+      </div>
+      <div class="gen-hint" id="gen-hint">请先上传完整的 Resume 和 JD</div>
+    </div>
+  </div>
+
+  <!-- ================= 屏2：配置抽屉 ================= -->
+  <aside class="drawer" id="drawer">
+    <div class="drawer-head">
+      <h2>瘦身配置</h2>
+      <button class="x" id="drawer-close">✕</button>
+    </div>
+    <div class="drawer-body">
+      <!-- 维度勾选 -->
+      <section class="cfg-section">
+        <div class="sec-title">打分维度</div>
+        <div id="dim-list"></div>
+      </section>
+
+      <!-- 预设系列 -->
+      <section class="cfg-section">
+        <div class="sec-title">预设系列</div>
+        <div class="preset-grid" id="preset-grid">
+          <button class="preset-btn" data-preset="auto">系统自动判断<div class="preset-scores">按 JD 智能匹配</div></button>
+          <button class="preset-btn" data-preset="general">通用<div class="preset-scores">20 / 45 / 15 / 10</div></button>
+          <button class="preset-btn" data-preset="tech">技术<div class="preset-scores">30 / 30 / 10 / 30</div></button>
+          <button class="preset-btn" data-preset="manage">管理<div class="preset-scores">20 / 35 / 10 / 35</div></button>
+          <button class="preset-btn" data-preset="campus">校招<div class="preset-scores">30 / 30 / 5 / 5</div></button>
+          <button class="preset-btn" data-preset="custom">用户自定义<div class="preset-scores">自由调整分数</div></button>
+        </div>
+      </section>
+
+      <div class="cfg-note">
+        调参 = 勾选 / 取消维度、滑动权重、切换预设。仅展开抽屉不做操作不算调参。固定预设下分数不可编辑，切到「用户自定义」后可自由调整。
+      </div>
+
+      <div style="position:sticky;bottom:0;background:linear-gradient(rgba(255,255,255,0),#fff 40%);padding:14px 0 2px;margin:0 -22px -30px">
+        <button class="btn btn-primary" id="btn-gen-drawer" style="width:100%;padding:12px" disabled>生成瘦身简历</button>
+        <div id="drawer-gen-hint" style="font-size:12px;color:var(--muted);text-align:center;margin-top:8px;min-height:18px"></div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- ================= 屏3：结果页 ================= -->
+<div class="view-page" id="view-result">
+  <header class="app-header">
+    <div class="logo"><span class="mark">TrueFit</span><span>简旨</span></div>
+    <button class="text-link" id="back-home-1">← 返回首页</button>
+  </header>
+  <div class="match-banner" id="match-banner">当前匹配：<b>后端开发工程师（AI Agent）</b>｜改写原则：保留全部事实，不虚构经历</div>
+
+  <div class="cols">
+    <div class="cols-top">
+    <!-- 左：原文 -->
+    <div class="col col-original" id="col-original">
+      <div class="col-head">
+        <div class="ch-left">
+          <h2>📄 简历原文</h2>
+          <div class="desc">只读・原始简历素材，用于对照溯源</div>
+        </div>
+        <button class="collapse-btn" id="collapse-left">收起原文</button>
+      </div>
+      <div class="col-body" id="original-body"></div>
+    </div>
+
+    <!-- 中：瘦身简历 -->
+    <div class="col col-slim" id="col-slim">
+      <div class="col-head">
+        <div class="ch-left">
+          <h2 id="slim-title">👁️ 瘦身简历</h2>
+          <div class="desc" id="slim-desc">预览・基于原文重组，未编造内容</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;position:relative">
+          <div style="position:relative">
+            <button class="export-btn" id="export-btn">⬇ 导出</button>
+            <div class="export-menu" id="export-menu">
+              <button data-export="md">导出 Markdown</button>
+              <button data-export="txt">导出纯文本</button>
+            </div>
+          </div>
+          <button class="col-btn" id="btn-edit">✎ 编辑</button>
+        </div>
+      </div>
+      <div class="col-body" id="slim-body"></div>
+    </div>
+    </div>
+
+    <!-- 底部：匹配报告（折叠） -->
+    <div class="report-wrap" id="col-report">
+      <div class="report-summary">
+        <div class="rs-score">匹配度 55<small> / 100</small></div>
+        <div class="rs-verdict"><b>资历</b>命中度高，整体匹配良好，建议直接投递。</div>
+        <button class="btn-toggle-report" id="btn-toggle-report">查看完整匹配报告</button>
+      </div>
+      <div class="report-detail collapsed" id="report-detail">
+      <div class="dim-bar-row"><span class="db-name">技能</span><div class="db-track"><div class="db-fill" style="width:50%"></div></div><span class="db-val">5 / 10</span></div>
+        <div class="dim-bar-row"><span class="db-name">内容</span><div class="db-track"><div class="db-fill" style="width:65%"></div></div><span class="db-val">6.5 / 10</span></div>
+        <div class="dim-bar-row"><span class="db-name">行业</span><div class="db-track"><div class="db-fill" style="width:50%"></div></div><span class="db-val">5 / 10</span></div>
+        <div class="dim-bar-row"><span class="db-name">资历</span><div class="db-track"><div class="db-fill" style="width:80%"></div></div><span class="db-val">8 / 10</span></div>
+
+      <div class="rp-block hit">
+        <h4><span class="blk-icon">✅</span>命中项（JD 要求 → 简历证据）</h4>
+        <div class="match-item hit"><span class="match-dot"></span><div><span class="mi-req">Java/Go：</span><span class="mi-ev">命中 Spring Boot、MyBatis、java、spring、mybatis、ssm、Spring Cloud、SSM — E1 Spring Boot/MyBatis、E2 技能区声明、E3 技能区声明、E4 Spring Cloud、E5 技能区声明、E6 SSM、E7 SSM</span></div></div>
+        <div class="match-item hit"><span class="match-dot"></span><div><span class="mi-req">MySQL：</span><span class="mi-ev">命中 MySQL、mysql — E1 MySQL、E2 技能区声明、E3 技能区声明、E4 MySQL、E5 MySQL、E6 技能区声明、E7 技能区声明</span></div></div>
+        <div class="match-item hit"><span class="match-dot"></span><div><span class="mi-req">Redis：</span><span class="mi-ev">命中 redis、Redis — E1 技能区声明、E2 技能区声明、E3 技能区声明、E4 Redis、E5 Redis、E6 技能区声明、E7 技能区声明</span></div></div>
+        <div class="match-item hit"><span class="match-dot"></span><div><span class="mi-req">分布式基础：</span><span class="mi-ev">命中 ES、spring cloud、rabbitmq、kafka、Spring Cloud、分布式 — E1 ES、E2 技能区声明、E3 技能区声明、E4 Spring Cloud、E5 actions:分布式、E6 技能区声明、E7 技能区声明</span></div></div>
+        <div class="match-item hit"><span class="match-dot"></span><div><span class="mi-req">Linux：</span><span class="mi-ev">命中 linux — E1 技能区声明、E2 技能区声明、E3 技能区声明、E4 技能区声明、E5 技能区声明、E6 技能区声明、E7 技能区声明</span></div></div>
+        <div class="match-item hit"><span class="match-dot"></span><div><span class="mi-req">业务后端接口开发、系统优化、线上问题排查，保障服务稳定运行：</span><span class="mi-ev">最高相似度 0.74（E6 0.74「项目上线后做运维支持，处理客户反馈的问题」、E1 0.63「参与订单中心重构，把原来的单体服务拆成订单创建、查询、订…」、E7 0.62「负责质检单的录入和查询功能，以及一部分报表导出功能」）</span></div></div>
+        <div class="match-item hit"><span class="match-dot"></span><div><span class="mi-req">参与技术方案设计，跟进大模型相关技术落地：</span><span class="mi-ev">最高相似度 0.64（E6 0.64「跟随项目经理去客户现场做需求调研并整理需求文档」、E5 0.62「参与优惠券系统的开发」、E1 0.61「参与代码review，带一名刚毕业的校招生熟悉业务和代码规范」）</span></div></div>
+      </div>
+
+      <div class="rp-block miss">
+        <h4><span class="blk-icon">⚠️</span>缺口项（JD 要求但简历未体现）</h4>
+        <div class="match-item miss"><span class="match-dot"></span><div><span class="mi-req">计算机基础：</span><span class="mi-ev">tech/actions 与技能区均未出现数据结构、操作系统、计算机网络等基础关键词</span></div></div>
+        <div class="match-item miss"><span class="match-dot"></span><div><span class="mi-req">独立开发、故障排查能力：</span><span class="mi-ev">tech/actions 未体现独立完成项目或线上故障定位的完整描述</span></div></div>
+        <div class="match-item miss"><span class="match-dot"></span><div><span class="mi-req">AI智能体（bonus）：</span><span class="mi-ev">无 AI 智能体相关项目或技术栈</span></div></div>
+        <div class="match-item miss"><span class="match-dot"></span><div><span class="mi-req">向量数据库（bonus）：</span><span class="mi-ev">无向量数据库（Milvus/FAISS 等）使用经历</span></div></div>
+        <div class="match-item miss"><span class="match-dot"></span><div><span class="mi-req">LLM服务对接（bonus）：</span><span class="mi-ev">简历 tech/actions 未命中该技能关键词（llm服务对接）</span></div></div>
+        <div class="match-item miss"><span class="match-dot"></span><div><span class="mi-req">AIAgent后端服务开发，实现智能体调度、工具调用、记忆模块、对话链路等功能开发：</span><span class="mi-ev">所有经历与该职责最高语义相似度仅 0.58（命中阈值 0.60）</span></div></div>
+        <div class="match-item miss"><span class="match-dot"></span><div><span class="mi-req">资历 1-3年：</span><span class="mi-ev">实际 5 年，存在资历偏高风险</span></div></div>
+        <div class="match-item miss"><span class="match-dot"></span><div><span class="mi-req">大厂经历（优先项）：</span><span class="mi-ev">简历公司均为中小型企业，无大厂背景（优先项，非硬门槛）</span></div></div>
+      </div>
+
+      <div class="rp-section">
+        <h4>改动说明</h4>
+        <div style="font-size:12.5px;font-weight:600;color:var(--text-2);padding:6px 0 2px">✂️ 精简压缩：删除低相关细节，保留核心信息</div>
+        <div class="change-item" data-exp="E1"><span class="op-tag cn-compress has-tip">✂️精简压缩<span class="op-tip">compress：删除低相关细节，保留核心信息</span></span><div><b>订单中心服务化改造：</b>压缩冗余，保留核心事实。</div></div>
+        <div class="change-item" data-exp="E2"><span class="op-tag cn-compress has-tip">✂️精简压缩<span class="op-tip">compress：删除低相关细节，保留核心信息</span></span><div><b>支付回调链路稳定性与支付对账系统：</b>压缩冗余，保留核心事实。</div></div>
+        <div class="change-item" data-exp="E3"><span class="op-tag cn-compress has-tip">✂️精简压缩<span class="op-tip">compress：删除低相关细节，保留核心信息</span></span><div><b>618与双11大促保障：</b>压缩冗余，保留核心事实。</div></div>
+        <div class="change-item" data-exp="E6"><span class="op-tag cn-compress has-tip">✂️精简压缩<span class="op-tip">compress：删除低相关细节，保留核心信息</span></span><div><b>校园市场推广：</b>压缩冗余，保留核心事实（教育为 JD 偏好行业，见补充建议）。</div></div>
+        <div style="font-size:12.5px;font-weight:600;color:var(--text-2);padding:10px 0 2px">🔗 合并：多条动作合并为一句，保留全部量化指标</div>
+        <div class="change-item" data-exp="E4"><span class="op-tag cn-merge has-tip">🔗 合并<span class="op-tip">merge：多条动作合并为一句，保留全部量化指标</span></span><div><b>会员积分系统、优惠券系统：</b>同一聚类分组内合并叙述。</div></div>
+        <div class="change-item" data-exp="E5"><span class="op-tag cn-merge has-tip">🔗 合并<span class="op-tip">merge：多条动作合并为一句，保留全部量化指标</span></span><div><b>进销存管理系统（库存模块）、质检管理系统：</b>同一聚类分组内合并叙述。</div></div>
+      </div>
+
+      <div class="rp-divider"></div>
+
+      <div class="rp-section">
+        <h4>补充建议</h4>
+        <ol class="sug-list">
+          <li>补充计算机基础、独立开发、故障排查能力经历：在项目描述中体现数据结构、操作系统、网络协议等基础功底；突出独立完成的小项目与线上问题定位案例（如对账脚本、告警排查），哪怕是个人项目也建议列出。</li>
+          <li>若有AI智能体、向量数据库、LLM服务对接经验，建议在技能区显式声明并补一条经历证据。</li>
+          <li>校园市场推广虽与技术无关，但教育行业是JD偏好行业，可用一行带过，不必整段删除。</li>
+          <li>资历高于JD要求（5年 vs 1-3年），建议弱化年限表述、突出技术深度与独立产出，避免被判定 overqualified。</li>
+          <li>大厂经历为优先项，非硬门槛；建议突出项目规模、技术深度来弥补。</li>
+        </ol>
+      </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 屏4：编辑页（经历整理） ================= -->
+<div class="view-page" id="view-edit">
+  <header class="app-header">
+    <div class="logo"><span class="mark">TrueFit</span><span>简旨</span><span class="sub">整理我的经历</span></div>
+    <button class="text-link" id="edit-back">← 返回首页</button>
+  </header>
+
+  <div class="drag-main">
+    <div class="drag-wrap">
+      <div class="edit-page-title">整理我的经历</div>
+      <div class="drag-hint">
+        勾选要保留的经历（默认全选）；拖动 <b>⠿</b> 调整顺序；把一张卡片<b>拖到另一张卡片上</b>可合并两段经历；
+        也可勾选多段后点上方「合并到一组」。删除的经历会进入下方回收站，随时可恢复。
+      </div>
+    </div>
+
+    <div class="edit-toolbar">
+      <label class="ec-selectall"><input type="checkbox" id="ec-all"> 全选</label>
+      <span class="ec-count" id="ec-count"></span>
+      <span style="flex:1"></span>
+      <button class="btn btn-secondary" id="btn-merge-group" disabled>🔗 合并到一组</button>
+    </div>
+
+    <div class="drag-wrap">
+      <div id="edit-list"></div>
+
+      <div class="deleted-zone">
+        <h4>🗑 已删除（不进入瘦身简历，可恢复）</h4>
+        <div id="edit-trash"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="drag-footer">
+    <span id="edit-foot-hint">整理完成后点「完成」，瘦身简历将按你的勾选、顺序与分组重新生成（三层呈现：核心内容 / 相关内容 / 其他内容）。</span>
+    <button class="btn btn-secondary" id="edit-cancel">返回</button>
+    <button class="btn btn-primary" id="edit-done">✓ 完成</button>
+  </div>
+</div>
+
+<!-- 生成中 -->
+<div class="loading-mask" id="loading">
+  <div class="spinner"></div>
+  <div class="lm-txt" id="loading-txt">正在按当前配置生成瘦身简历…</div>
+</div>
+
+<script>
+/* ================= 真实 pipeline 产物（A_live × JD1_live，2026-10-03） ================= */
+// 简历原文段落（来自 data/extracted/resumes/A_live.json 的 source_store），id 用于高亮联动
+const SRC = {
+  W1:'2021.07 - 至今  杭州某电子商务有限公司  后端开发工程师\n公司主要做的是自营电商平台，包括PC商城、APP商城、小程序商城，我所在的组是交易与订单组，主要负责订单、支付、售后相关的后端服务。\n参与订单中心的重构工作，把原来一个比较大的单体服务拆成了订单创建、订单查询、订单状态流转几个模块，我主要负责订单状态流转这一块，用Spring Boot + MyBatis + MySQL实现，重构之后订单状态相关的接口平均响应时间从原来的300ms左右降到了120ms左右。\n负责支付回调链路的稳定性优化，之前经常出现支付成功了但是订单状态没更新，用户投诉比较多，后来加了回调幂等处理、失败重试、对账补偿任务，把支付回调相关的线上问题从每月大概15起降到了每月2-3起。\n写了一个对账脚本，每天凌晨跑，把第三方支付平台的流水和我们自己的订单支付记录做比对，发现不一致的会发告警邮件，这个脚本后来交给了运维同学一起维护。\n参与618和双11的大促保障，主要是提前做容量评估、压测、限流配置，大促期间值守处理线上问题。2023年双11当天订单创建峰值大概在每秒2000单左右，整体没有出大故障。\n平时也会参与代码review，带过一个刚毕业的校招生，帮他熟悉业务和代码规范。\n每周参加组里的需求评审和技术方案评审，有时候也会和产品、测试一起对齐一些边界情况。',
+  W2:'2020.03 - 2021.06  杭州某网络科技有限公司  后端开发工程师\n这家公司是做SaaS工具的，主要给中小商家提供会员管理和营销工具，我负责的是会员积分和优惠券模块。\n负责会员积分系统的日常开发和维护，包括积分获取、积分消耗、积分过期等逻辑，用的是Spring Cloud + Redis + MySQL。\n参与优惠券系统的开发，支持满减券、折扣券、兑换券几种类型，写了一些发券和核销的接口。\n优化过积分过期的定时任务，原来是一次性把所有过期积分查出来处理，数据量大了之后经常超时，后来改成分页批量处理，任务执行时间从40多分钟降到了10分钟以内。\n修过一些线上bug，比如并发领券导致超发的问题，后来加了Redis分布式锁。\n配合前端和测试联调，写接口文档。',
+  W3:'2018.07 - 2020.02  上海某信息技术有限公司  软件开发工程师\n这家公司主要是做企业信息化项目的，客户是一些传统制造业企业，我参与过两个项目，一个是某汽车零部件厂的进销存管理系统，一个是某食品厂的质检管理系统。\n在进销存项目里负责库存模块的开发，包括入库、出库、库存盘点等功能，用的是SSM框架。\n在质检项目里负责质检单的录入和查询功能，还有一部分报表导出功能，用的是POI。\n跟着项目经理去客户现场做过几次需求调研，整理过需求文档。\n写过一些简单的SQL查询和存储过程。\n项目上线后做过一段时间的运维支持，处理客户反馈的问题。',
+  W4:'2017.07 - 2017.09  某教育培训机构  市场部实习生\n大三暑假的时候在这家机构实习了两个月，主要是做市场推广方面的工作。\n负责在高校周边发放宣传单页，每天大概发200-300份。\n协助组织过两场考研讲座，一场大概来了80多人，另一场来了50多人。\n整理过意向学员的联系方式，录入Excel表格，大概录了500多条。\n跟着市场部的前辈去周边几个大学贴过海报。\n这个实习跟技术关系不大，主要是想体验一下不同的工作，顺便赚点生活费。',
+  P1:'2022.03 - 2022.09  订单中心服务化改造\n项目背景：原来的订单服务是一个单体应用，代码耦合严重，每次改一个小功能都要全量发布，而且订单表和订单明细表数据量越来越大，查询越来越慢。\n我的职责：作为核心开发之一，负责订单状态流转模块的设计和开发，以及部分订单查询接口的优化。\n技术方案：用Spring Boot搭建新服务，数据库做了分表，订单表按用户ID哈希分16张表，查询走ES做部分字段的检索。\n主要工作：定义了订单状态机，把订单状态流转统一收口到一个服务里；写了状态变更的幂等处理；配合DBA做了数据迁移。\n结果：改造后订单相关接口的P99从800ms降到了300ms左右，发布频率从两周一次变成了一周两次。',
+  P2:'2021.09 - 2021.12  支付对账系统\n项目背景：之前对账是靠人工导出数据用Excel比对，效率低而且容易出错，财务那边经常反馈对不上。\n我的职责：独立负责对账系统的后端开发。\n主要工作：对接了微信支付和支付宝的对账单文件下载接口，写了解析逻辑，和内部订单支付记录做比对，差异数据落库并生成报表。\n结果：对账从原来人工大概半天的工作量缩短到系统自动跑15分钟左右，财务只需要处理差异数据。',
+  P3:'2019.05 - 2019.11  某食品厂质检管理系统\n项目背景：客户是一家食品加工厂，之前质检记录都是纸质的，查找和统计都不方便。\n我的职责：负责质检单录入、查询和报表导出模块。\n主要工作：用SSM框架写CRUD接口，用POI做Excel导出，写了几个统计SQL。\n结果：客户那边质检记录实现了电子化，查询历史记录方便了很多。'
+};
+
+// 经历分组元数据（6 个聚类组 G1-G6，来自 data/output/clusters_A.json + changes_A_live.json）
+// tier 取自 clusters；相关分取自真实 pipeline（step3 embedding 加权 total，组内取最高经历）
+// 注意：真实 LLM 将 G6 市场推广保留为 compress（非 omit），6 组全部展示
+const EXPS = {
+  E1:{title:'订单中心',time:'2021.07-至今 / 2022.03-2022.09',tier:'related',score:5.2,
+      role:'核心开发之一，负责订单状态流转模块的设计与开发，以及部分订单查询接口优化',
+      cardActions:['参与订单中心重构，把单体服务拆成订单创建、查询、状态流转模块','定义订单状态机，统一收口状态流转，编写状态变更幂等处理']},
+  E2:{title:'支付链路',time:'2021.07-至今 / 2021.09-2021.12',tier:'related',score:5.2,
+      role:'核心开发，负责支付回调链路稳定性优化；独立负责对账系统后端开发',
+      cardActions:['支付回调增加幂等 / 重试 / 对账补偿，线上问题 15 起→2-3 起每月','独立开发支付对账系统，对接微信、支付宝账单，对账半天→15 分钟']},
+  E3:{title:'大促保障',time:'2021.07-至今',tier:'related',score:4.7,
+      role:'参与，负责大促容量评估、压测、限流配置及大促期间值守',
+      cardActions:['参与 618、双 11 大促保障，负责容量评估、压测与限流配置','2023 年双 11 订单创建峰值约每秒 2000 单，未出现重大故障']},
+  E4:{title:'会员与营销',time:'2020.03-2021.06',tier:'related',score:5.0,
+      role:'核心开发，负责会员积分系统；参与优惠券系统开发',
+      cardActions:['实现积分获取 / 消耗 / 过期逻辑，过期定时任务 40 分钟→10 分钟内','编写发券 / 核销接口，引入 Redis 分布式锁修复并发领券超发']},
+  E5:{title:'企业信息化',time:'2018.07-2020.02 / 2019.05-2019.11',tier:'related',score:5.2,
+      role:'参与进销存库存模块开发；负责质检单录入、查询与报表导出模块',
+      cardActions:['SSM 实现入库 / 出库 / 库存盘点等 CRUD 接口','POI 实现质检报表 Excel 导出，编写统计 SQL']},
+  E6:{title:'市场推广',time:'2017.07-2017.09',tier:'other',score:3.1,
+      role:'市场部实习生，负责校园市场推广工作',
+      cardActions:['高校周边发放宣传单页 200-300 份/天','协助组织两场考研讲座（约 80 人、50 人）']}
+};
+
+// 瘦身简历段落（来自 data/output/changes_A_live.json，每条 change 对应一段）
+const BLOCKS = {
+  E1:[
+    {id:'out_001',op:'compress',src:['W1','P1'],text:'参与订单中心重构，将原单体服务拆分为订单创建、订单查询、订单状态流转模块，主要负责订单状态流转模块的设计与开发，基于 Spring Boot + MyBatis + MySQL 实现；定义订单状态机，将状态流转统一收口至单一服务，实现状态变更幂等处理，配合 DBA 完成数据迁移，订单表按用户 ID 哈希分 16 张表，订单查询走 ES 检索部分字段。重构后订单状态相关接口平均响应时间由 300ms 降至 120ms，订单相关接口 P99 由 800ms 降至 300ms，发布频率由两周一次变为一周两次。参与需求评审与技术方案评审，参与代码 review 并指导一名应届生熟悉业务与代码规范。'}
+  ],
+  E2:[
+    {id:'out_002',op:'compress',src:['W1','P2'],text:'负责支付回调链路稳定性优化，增加回调幂等处理、失败重试与对账补偿任务，支付回调相关线上问题由每月约 15 起降至每月 2-3 起；编写对账脚本，每日凌晨比对第三方支付平台流水与内部订单支付记录，不一致时发送告警邮件。独立负责支付对账系统后端开发，对接微信支付、支付宝对账单文件下载接口，实现对账单解析及与内部订单支付记录的比对，差异数据落库并生成报表，对账由人工约半天缩短至系统自动运行 15 分钟左右。'}
+  ],
+  E3:[
+    {id:'out_003',op:'compress',src:['W1'],text:'参与 618 与双 11 大促保障，负责容量评估、压测与限流配置，大促期间值守处理线上问题；2023 年双 11 当天订单创建峰值约每秒 2000 单，未出现重大故障。'}
+  ],
+  E4:[
+    {id:'out_004',op:'merge',src:['W2'],text:'负责会员积分系统日常开发与维护，实现积分获取、积分消耗、积分过期等逻辑，技术栈为 Spring Cloud + Redis + MySQL；优化积分过期定时任务，由一次性全量查询改为分页批量处理，任务执行时间由 40 多分钟降至 10 分钟以内。参与优惠券系统开发，支持满减券、折扣券、兑换券类型，编写发券与核销接口；修复并发领券导致超发的线上问题，引入 Redis 分布式锁；配合前端与测试联调并编写接口文档。'}
+  ],
+  E5:[
+    {id:'out_005',op:'merge',src:['W3','P3'],text:'在进销存项目中负责库存模块开发，实现入库、出库、库存盘点等功能，采用 SSM 框架；在质检管理系统中负责质检单录入、查询与报表导出模块，基于 SSM 编写 CRUD 接口，使用 POI 实现 Excel 导出，编写统计 SQL。参与客户现场需求调研并整理需求文档，编写 SQL 查询与存储过程，项目上线后提供运维支持，处理客户反馈问题；客户质检记录实现电子化。'}
+  ],
+  E6:[
+    {id:'out_006',op:'compress',src:['W4'],text:'某教育培训机构 市场部实习生：负责高校周边宣传单页发放，每日约 200-300 份；协助组织两场考研讲座，参与人数分别约 80 人、50 人；整理意向学员联系方式并录入 Excel 表格 500 余条。'}
+  ]
+};
+
+const OP_LABEL = {verbatim:'保留原文',compress:'压缩',reword:'改写',merge:'合并',reorder:'前置',demote:'降级',omit:'省略'};
+const TIER_LABEL = {core:'核心内容',related:'相关内容',other:'其他内容'};
+
+// 示例上传内容
+const SAMPLE_RESUME = ['张伟｜男｜29岁｜杭州｜138-0000-1234','求职意向：后端开发工程师',
+  '工作经历：杭州某电子商务有限公司（2021.07-至今）后端开发工程师，负责订单、支付相关后端服务；',
+  '杭州某网络科技有限公司（2020.03-2021.06）负责会员积分与优惠券模块；',
+  '上海某信息技术有限公司（2018.07-2020.02）软件开发工程师，参与进销存、质检系统；',
+  '2017年暑期某教育培训机构市场实习。',
+  '技能：Java、Spring Boot/Cloud、MySQL、Redis、RabbitMQ、Linux、Docker。'].join('\n');
+const SAMPLE_JD = ['后端开发工程师（AI Agent）','本科及以上，1-3年后端开发经验，大厂经历优先。',
+  '熟练Java/Go其一，扎实计算机基础；熟悉MySQL、Redis，了解分布式基础；熟悉Linux。',
+  '负责AI Agent后端服务开发（智能体调度、工具调用、记忆模块、对话链路）；',
+  '业务后端接口开发、系统优化、线上问题排查；参与技术方案设计，跟进大模型技术落地。',
+  '有Agent/大模型应用、向量数据库、LLM对接经验及教育行业经验优先。'].join('\n');
+
+/* ================= 状态 ================= */
+const DIMS = [
+  {key:'skill',name:'技能'},{key:'content',name:'内容'},
+  {key:'industry',name:'行业'},{key:'level',name:'资历'}
+];
+const PRESET_SCORES = {
+  general:{skill:20,content:45,industry:15,level:10},
+  tech:   {skill:30,content:30,industry:10,level:30},
+  manage: {skill:20,content:35,industry:10,level:35},
+  campus: {skill:30,content:30,industry:5, level:5 }
+};
+const state = {
+  resume:null, jd:null,
+  drawerOpen:false,
+  generated:false,
+  preset:'general',
+  scores:Object.assign({},PRESET_SCORES.general),
+  checked:{skill:true,content:true,industry:true,level:true},
+  snapshot:null, // 上次生成时的参数
+  order:['E1','E2','E3','E4','E5','E6'],
+  deleted:[], // 真实 LLM 将 G6 市场推广保留为 compress，无 omit，回收站初始为空
+  edits:{},
+  editing:false,
+  // 编辑页整理计划：kept=主列表中组首(leader)顺序；removed=回收站；selected=勾选保留；groups={leaderId:[成员id]}
+  editPlan:null,
+  editReturn:'home' // 编辑页返回目标：home / result
+};
+state.snapshot = snap();
+
+// 模式B（一键生成）：系统自动全选 + 自动聚类（真实结果无 omit，6 组全部保留）
+function makeSystemPlan(){
+  const kept=state.order.slice();
+  return {kept:kept, removed:state.deleted.slice(), selected:kept.slice(), groups:{}};
+}
+// 模式A（自己瘦身）：全部经历进入主列表，按相关度从高到低排序，默认全选，不做自动聚类
+function makeManualPlan(){
+  const all=Object.keys(EXPS).sort((a,b)=>EXPS[b].score-EXPS[a].score);
+  return {kept:all, removed:[], selected:all.slice(), groups:{}};
+}
+
+function snap(){
+  return JSON.stringify({
+    scores:state.scores,
+    checked:state.checked,
+    resume:state.resume?state.resume.text:null,
+    jd:state.jd?state.jd.text:null
+  });
+}
+function isDirty(){return snap()!==state.snapshot;}
+function bothUploaded(){return !!(state.resume && state.jd);}
+
+/* ================= 上传区 ================= */
+const uploadEditState={resume:{editing:false,original:''},jd:{editing:false,original:''}};
+
+function initPanel(kind){
+  const card = document.getElementById('card-'+kind);
+  const tabs = card.querySelectorAll('.tabs button');
+  const drop = card.querySelector('.dropzone');
+  const fileInput = card.querySelector('input[type=file]');
+  const paste = card.querySelector('.paste-area');
+  const ta = card.querySelector('textarea');
+  const loaded = card.querySelector('.loaded-box');
+  const preview = document.getElementById(kind+'-lb-preview');
+  const editBtn = card.querySelector('.lb-edit-btn');
+  const editMeta = document.getElementById(kind+'-edit-meta');
+  let mode='file';
+
+  tabs.forEach(b=>b.addEventListener('click',()=>{
+    mode=b.dataset.mode;
+    tabs.forEach(x=>x.classList.toggle('active',x===b));
+    drop.classList.toggle('hidden',mode!=='file');
+    paste.classList.toggle('hidden',mode!=='paste');
+  }));
+  drop.addEventListener('click',()=>fileInput.click());
+  drop.addEventListener('dragover',e=>{e.preventDefault();drop.style.borderColor='var(--primary)';});
+  drop.addEventListener('dragleave',()=>{drop.style.borderColor='';});
+  drop.addEventListener('drop',e=>{
+    e.preventDefault();drop.style.borderColor='';
+    if(e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change',()=>{if(fileInput.files[0]) readFile(fileInput.files[0]);});
+  ta.addEventListener('input',()=>{
+    const t=ta.value.trim();
+    if(t) state[kind]={name:'粘贴文本',text:t}; else state[kind]=null;
+    refreshUploaded();
+  });
+
+  // 剪切板一键粘贴
+  card.querySelector('.paste-clip-btn').addEventListener('click',async()=>{
+    try{
+      const txt=await navigator.clipboard.readText();
+      ta.value=txt;
+      ta.dispatchEvent(new Event('input'));
+    }catch(e){
+      ta.focus();
+      ta.placeholder='浏览器拒绝读取剪切板，请手动粘贴（Ctrl+V）到此处';
+    }
+  });
+
+  // 上传文本编辑按钮
+  editBtn.addEventListener('click',()=>{
+    const s=uploadEditState[kind];
+    if(!s.editing){
+      s.editing=true;
+      preview.setAttribute('contenteditable','true');
+      s.original=preview.textContent; // 以渲染后的实际文本为准
+      preview.classList.remove('edited-text');
+      editBtn.textContent='✓ 完成修改';
+      editBtn.classList.add('active');
+      editMeta.textContent='正在编辑…修改完成后点击「完成修改」锁定';
+      editMeta.style.color='var(--primary)';
+      preview.focus();
+    }else{
+      s.editing=false;
+      preview.setAttribute('contenteditable','false');
+      editBtn.textContent='✎ 编辑';
+      editBtn.classList.remove('active');
+      const newText=preview.textContent;
+      const changed=state[kind] && newText.replace(/\s+$/,'')!==s.original.replace(/\s+$/,'');
+      if(changed){
+        state[kind].text=newText;
+        preview.classList.add('edited-text');
+        editMeta.textContent='✓ 文本已修改（与原始上传内容不同）';
+        editMeta.style.color='var(--green)';
+      }else{
+        preview.classList.remove('edited-text');
+        editMeta.textContent='';
+      }
+      updateGenerateBtn();
+    }
+  });
+
+  function readFile(f){
+    const reader=new FileReader();
+    reader.onload=()=>{state[kind]={name:f.name,text:String(reader.result||'')};refreshUploaded();};
+    reader.readAsText(f);
+  }
+  function showLoaded(){
+    const d=state[kind];
+    loaded.classList.remove('hidden');
+    drop.classList.add('hidden');
+    paste.classList.add('hidden');
+    tabs.forEach(x=>x.classList.toggle('active',false));
+    card.querySelector('.upload-card-head .tag').textContent='已上传';
+    card.querySelector('.upload-card-head .tag').classList.add('ok');
+    document.getElementById(kind+'-lb-name').textContent=d.name;
+    document.getElementById(kind+'-lb-meta').textContent=d.text.length+' 字符';
+    preview.textContent=d.text;
+    preview.setAttribute('contenteditable','false');
+    uploadEditState[kind]={editing:false,original:d.text};
+    preview.classList.remove('edited-text');
+    editBtn.textContent='✎ 编辑';
+    editBtn.classList.remove('active');
+    editMeta.textContent='';
+  }
+  function refreshUploaded(){
+    if(state[kind]) showLoaded(); else {
+      loaded.classList.add('hidden');
+      if(mode==='file') drop.classList.remove('hidden'); else paste.classList.remove('hidden');
+      const tag=card.querySelector('.upload-card-head .tag');
+      tag.textContent='未上传';tag.classList.remove('ok');
+    }
+    updateGenerateBtn();
+  }
+  document.getElementById(kind+'-repick').addEventListener('click',()=>{fileInput.click();});
+  document.getElementById(kind+'-clear').addEventListener('click',()=>{
+    state[kind]=null;ta.value='';fileInput.value='';mode='file';
+    tabs.forEach(x=>x.classList.toggle('active',x.dataset.mode==='file'));
+    refreshUploaded();
+  });
+  document.getElementById(kind+'-sample').addEventListener('click',()=>{
+    const txt = kind==='resume'?SAMPLE_RESUME:SAMPLE_JD;
+    state[kind]={name:kind==='resume'?'A_backend_5y（示例：张伟，后端5年）.md':'JD1_backend（示例：后端开发工程师-AI Agent）.md',text:txt};
+    refreshUploaded();
+  });
+}
+initPanel('resume');initPanel('jd');
+
+/* ================= 抽屉：维度 / 滑块 / 预设 ================= */
+function renderDims(){
+  const list=document.getElementById('dim-list');
+  list.innerHTML='';
+  const sum=DIMS.filter(d=>state.checked[d.key]).reduce((a,d)=>a+(+state.scores[d.key]||0),0);
+  DIMS.forEach(d=>{
+    const checked=state.checked[d.key];
+    const val=+state.scores[d.key]||0;
+    const pct=(checked&&sum>0)?Math.round(val/sum*100):0;
+    const fixed = state.preset!=='custom';
+    const disabled = !checked || fixed;
+    const row=document.createElement('div');
+    row.className='dim-row'+(checked?'':' disabled');
+    row.innerHTML=`
+      <div class="dim-top">
+        <label class="dim-check"><input type="checkbox" ${checked?'checked':''}> <span class="dim-name">${d.name}</span></label>
+        <span class="dim-pct">${pct}%</span>
+      </div>
+      <div class="dim-bottom">
+        <input type="range" min="0" max="100" value="${val}" ${disabled?'disabled':''} style="--fill:${val}%">
+        <input type="number" class="score-input" min="0" max="100" value="${val}" ${disabled?'disabled':''}>
+      </div>`;
+    const cb=row.querySelector('input[type=checkbox]');
+    const range=row.querySelector('input[type=range]');
+    const num=row.querySelector('input[type=number]');
+    cb.addEventListener('change',()=>{
+      markCustom(); // 勾选/取消均属调参 → 进入自定义
+      state.checked[d.key]=cb.checked;
+      renderDims();updateGenerateBtn();
+    });
+    range.addEventListener('input',()=>{
+      state.scores[d.key]=+range.value;num.value=range.value;
+      range.style.setProperty('--fill',range.value+'%');
+      updatePctLive(row);
+    });
+    range.addEventListener('change',()=>{renderDims();updateGenerateBtn();});
+    num.addEventListener('input',()=>{
+      let v=parseInt(num.value,10);if(isNaN(v))v=0;
+      v=Math.max(0,Math.min(100,v));
+      state.scores[d.key]=v;range.value=v;range.style.setProperty('--fill',v+'%');
+      updatePctLive(row);
+    });
+    num.addEventListener('blur',()=>{renderDims();updateGenerateBtn();});
+    list.appendChild(row);
+  });
+}
+function updatePctLive(){
+  const sum=DIMS.filter(d=>state.checked[d.key]).reduce((a,d)=>a+(+state.scores[d.key]||0),0);
+  [...document.querySelectorAll('.dim-row')].forEach((r,i)=>{
+    const d=DIMS[i];if(!state.checked[d.key]){r.querySelector('.dim-pct').textContent='0%';return;}
+    const v=+state.scores[d.key]||0;
+    r.querySelector('.dim-pct').textContent=(sum>0?Math.round(v/sum*100):0)+'%';
+  });
+}
+function markCustom(){
+  if(state.preset!=='custom') state.preset='custom';
+  syncPresetActive();
+}
+function syncPresetActive(){
+  document.querySelectorAll('.preset-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.preset===state.preset);
+  });
+}
+document.querySelectorAll('.preset-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const p=btn.dataset.preset;
+    if(p==='auto'){
+      // 系统自动判断：分析 JD 静默落到最接近的固定预设（本 JD 为后端技术岗 → 技术）
+      state.preset='tech';
+    }else if(p==='custom'){
+      state.preset='custom'; // 继承当前分数
+    }else{
+      state.preset=p;
+      state.scores=Object.assign({},PRESET_SCORES[p]);
+      state.checked={skill:true,content:true,industry:true,level:true};
+    }
+    syncPresetActive();renderDims();updateGenerateBtn();
+  });
+});
+
+/* 抽屉开合 */
+const drawer=document.getElementById('drawer');
+const cfgTrigger=document.getElementById('cfg-trigger');
+function openDrawer(){state.drawerOpen=true;drawer.classList.add('open');cfgTrigger.classList.add('open');cfgTrigger.innerHTML='<span>✕</span>收起配置';updateGenerateBtn();}
+function closeDrawer(){state.drawerOpen=false;drawer.classList.remove('open');cfgTrigger.classList.remove('open');cfgTrigger.innerHTML='<span>⚙</span>进入瘦身配置';updateGenerateBtn();}
+cfgTrigger.addEventListener('click',()=>state.drawerOpen?closeDrawer():openDrawer());
+document.getElementById('drawer-close').addEventListener('click',closeDrawer);
+
+/* ================= 一键生成按钮状态 ================= */
+const btnGen=document.getElementById('btn-generate');
+const genHint=document.getElementById('gen-hint');
+const genTip=document.getElementById('gen-tip');
+// 按钮三态：incomplete=灰不可点 / fresh=主色首次生成 / view=次色查看已生成 / changed=主色重新生成
+function genMode(){
+  if(!bothUploaded())return 'incomplete';
+  if(!state.generated)return 'fresh';
+  return isDirty()?'changed':'view';
+}
+function updateGenerateBtn(){
+  const mode=genMode();
+  let enabled=false,hint='',tip='',warn=false,viewMode=false;
+  if(mode==='incomplete'){
+    hint='请先上传完整的 Resume 和 JD';warn=true;
+  }else if(mode==='fresh'){
+    enabled=true;tip='按当前配置生成瘦身简历';
+  }else if(mode==='view'){
+    enabled=true;tip='回到结果页查看';viewMode=true;
+  }else{
+    enabled=true;tip='按新配置重新生成';
+  }
+  btnGen.disabled=!enabled;
+  btnGen.classList.toggle('view-mode',viewMode);
+  btnGen.textContent=viewMode?'查看已瘦身的简历':'一键生成瘦身简历';
+  genHint.textContent=hint;
+  genHint.classList.toggle('warn',warn);
+  genTip.textContent=tip;
+  genTip.classList.toggle('show',!!tip);
+
+  // 抽屉内生成按钮同步
+  const db=document.getElementById('btn-gen-drawer');
+  const dh=document.getElementById('drawer-gen-hint');
+  if(db){
+    db.disabled=!enabled;
+    dh.textContent=hint||tip;
+    dh.classList.toggle('warn',warn);
+  }
+
+  // 次按钮【自己给简历瘦身】：灰色逻辑与主按钮相同（未传完即禁用）
+  const btnManual=document.getElementById('btn-generate-manual');
+  const manualTip=document.getElementById('manual-tip');
+  if(btnManual){
+    btnManual.disabled=!enabled;
+    const mTip=!enabled?'请先上传完整的 Resume 和 JD'
+      :(state.generated?'在当前瘦身结果基础上手动勾选、调序与合并':'自己勾选经历、调整顺序与分组');
+    manualTip.textContent=mTip;
+    manualTip.classList.toggle('show',enabled);
+  }
+}
+// 点击：view 态直接回结果页（不重新生成）；其余态执行生成
+function handleGenerateClick(){
+  if(!bothUploaded())return;
+  if(genMode()==='view'){
+    showView('view-result');
+  }else{
+    doGenerate();
+  }
+}
+btnGen.addEventListener('click',handleGenerateClick);
+document.getElementById('btn-gen-drawer').addEventListener('click',()=>{
+  const b=document.getElementById('btn-gen-drawer');
+  if(b.disabled)return;
+  closeDrawer();
+  handleGenerateClick();
+});
+// 模式A入口：自己给简历瘦身 → 进入编辑页手动勾选/聚类（未生成过=全量经历；已生成=基于当前结果调整）
+document.getElementById('btn-generate-manual').addEventListener('click',()=>{
+  if(!bothUploaded())return;
+  if(!state.editPlan) state.editPlan=state.generated?makeSystemPlan():makeManualPlan();
+  openEditPage('home');
+});
+
+function doGenerate(){
+  const loading=document.getElementById('loading');
+  document.getElementById('loading-txt').textContent='正在按当前简历、JD 与配置生成瘦身简历…';
+  loading.classList.add('show');
+  setTimeout(()=>{
+    loading.classList.remove('show');
+    state.generated=true;
+    state.snapshot=snap();
+    state.editing=false;
+    state.editPlan=makeSystemPlan(); // 模式B：系统自动全选 + 自动聚类
+    state.order=state.editPlan.kept.slice();
+    state.deleted=state.editPlan.removed.slice();
+    renderOriginal();renderSlim();renderResultHeader();
+    showView('view-result');
+    updateGenerateBtn();
+  },750);
+}
+
+/* ================= 视图切换 ================= */
+function showView(id){
+  ['view-home','view-result','view-edit'].forEach(v=>document.getElementById(v).classList.toggle('active',v===id));
+  window.scrollTo(0,0);
+}
+document.getElementById('back-home-1').addEventListener('click',()=>{showView('view-home');updateGenerateBtn();});
+
+/* ================= 左栏：原文渲染 ================= */
+const RESUME_GROUPS=[
+  {type:'head'},
+  {type:'sec',title:'教育经历',entries:[
+    ['某某大学 · 计算机科学与技术 · 本科（2014.09-2018.06）',null],
+    ['GPA 3.2/4.0；主修：数据结构、操作系统、计算机网络、数据库原理、Java 程序设计、软件工程；三等奖学金。',null]
+  ]},
+  {type:'sec',title:'技能清单',skill:true},
+  {type:'sec',title:'工作经历一（电商）',entries:[['W1']]},
+  {type:'sec',title:'工作经历二（SaaS）',entries:[['W2']]},
+  {type:'sec',title:'工作经历三（企业信息化）',entries:[['W3']]},
+  {type:'sec',title:'实习经历',entries:[['W4']]},
+  {type:'sec',title:'项目经历',entries:[['P1'],['P2'],['P3']]}
+];
+function renderOriginal(){
+  const body=document.getElementById('original-body');
+  let html='';
+  RESUME_GROUPS.forEach(g=>{
+    if(g.type==='head'){
+      html+=`<div class="res-name">张伟</div>
+        <div class="res-sub">男 · 29岁 · 杭州 · 本科 · 5年后端经验 · 138-0000-1234 · zhangwei_resume@example.com</div>
+        <div class="res-sub" style="margin-bottom:16px">求职意向：后端开发工程师（杭州 · 面议 · 一个月内到岗）</div>`;
+      return;
+    }
+    if(g.skill){
+      html+=`<div class="res-sec"><div class="res-sec-title">${g.title}</div>
+        <div class="skill-line"><b>硬技能：</b>Java、SQL、Python、JavaScript、Spring / Spring Boot / Spring Cloud、MyBatis / MyBatis-Plus、SSM、MySQL、Redis、RabbitMQ、Kafka、Git、Maven、IDEA、Postman、Jenkins、Docker、Linux、HTTP 协议、TCP/IP、RESTful API</div>
+        <div class="skill-line" style="margin-top:4px"><b>软技能：</b>沟通能力、团队协作、学习能力、抗压能力、文档能力、责任心</div></div>`;
+      return;
+    }
+    html+=`<div class="res-sec"><div class="res-sec-title">${g.title}</div><div class="res-entry">`;
+    if(g.meta) html+=`<div class="re-meta">${SRC[g.meta]}</div>`;
+    g.entries.forEach(e=>{
+      const [id,style]=e;
+      if(style==='h') html+=`<div class="re-meta" style="margin-top:8px">${SRC[id]}</div>`;
+      else html+=`<span class="src" data-id="${id}">${SRC[id]}</span>`;
+    });
+    html+='</div></div>';
+  });
+  body.innerHTML=html;
+}
+
+/* ================= 中栏：瘦身简历渲染 ================= */
+// 经历组织由编辑页的 editPlan 驱动：kept 中存组首(leader)，groups 存合并组成员
+function planMembers(){
+  const p=state.editPlan;
+  return p?Object.values(p.groups).flat():[];
+}
+function visibleLeadersByTier(tier){
+  const p=state.editPlan;
+  if(!p) return [];
+  const members=new Set(planMembers());
+  return p.kept.filter(id=>!members.has(id) && p.selected.includes(id) && EXPS[id].tier===tier);
+}
+function visibleMembersOf(leaderId){
+  const p=state.editPlan;
+  if(!p) return [];
+  return (p.groups[leaderId]||[]).filter(id=>p.selected.includes(id));
+}
+// 相关分徽章配色：分数越高蓝色越深，低分区间极浅蓝底（非纯白）
+function scoreColor(score){
+  const s=Math.max(0,Math.min(10,score));
+  const start=[238,242,254]; // #eef2fe 极浅蓝
+  const end=[67,73,184];    // #4349b8 品牌深蓝
+  const t=s/10;
+  const r=Math.round(start[0]+(end[0]-start[0])*t);
+  const g=Math.round(start[1]+(end[1]-start[1])*t);
+  const b=Math.round(start[2]+(end[2]-start[2])*t);
+  const bg=`rgb(${r},${g},${b})`;
+  const lum=(0.299*r+0.587*g+0.114*b)/255;
+  const fg=lum>0.58?'#1f2329':'#fff';
+  return {bg,fg,bd:'rgba(94,106,210,.18)'};
+}
+let slimSortable=null;
+// 单句渲染（预览态只读；source 映射用于溯源高亮）
+function sentenceHtml(b){
+  const edited=!!state.edits[b.id];
+  const text=state.edits[b.id]??b.text;
+  return `<div class="sentence${edited?' edited':''}" data-bid="${b.id}" ${edited?'':`data-src="${b.src.join(' ')}" data-op-label="${OP_LABEL[b.op]||b.op}"`}
+    contenteditable="false" spellcheck="false">${escapeHtml(text)}</div>`;
+}
+// 合并组成员块（嵌在组首卡片内：成员小标题 + 其瘦身句）
+function slimMemberHtml(mid){
+  const e=EXPS[mid];
+  const blocks=BLOCKS[mid]||[];
+  const sc=e.tier==='other'?{bg:'#f1f1f4',fg:'#6b7280',bd:'#e3e5ea'}:scoreColor(e.score);
+  let h=`<div class="slim-member" data-exp="${mid}">
+    <div class="sm-head"><span class="sm-name">${e.title}</span>
+      <span class="tier-chip ${e.tier}">${TIER_LABEL[e.tier]}</span>
+      <span class="score-badge" style="background:${sc.bg};color:${sc.fg};border-color:${sc.bd}" title="相关分 ${e.score}/10">相关分 ${e.score}</span>
+      <span class="sm-time">${e.time}</span></div>`;
+  if(blocks.length===0){
+    h+=`<div class="sentence" style="color:var(--muted);cursor:default">（该经历与岗位弱相关，已随组合并保留，可在此补写一句概述）</div>`;
+  }else{
+    blocks.forEach(b=>{h+=sentenceHtml(b);});
+  }
+  return h+'</div>';
+}
+function renderSlim(){
+  const body=document.getElementById('slim-body');
+  body.classList.remove('editing');
+  let html='';
+  ['core','related','other'].forEach(tier=>{
+    const ids=visibleLeadersByTier(tier);
+    const memberCount=ids.reduce((n,id)=>n+visibleMembersOf(id).length,0);
+    const total=ids.length+memberCount;
+    html+=`<div class="tier-header tier-${tier}">
+      <span class="t-name">${TIER_LABEL[tier]}</span>
+      <span class="t-count">${total} 条经历${memberCount?`（${ids.length} 组）`:''}</span></div>`;
+    ids.forEach(id=>{
+      const e=EXPS[id];
+      const blocks=BLOCKS[id]||[];
+      const sc=tier==='other'?{bg:'#f1f1f4',fg:'#6b7280',bd:'#e3e5ea'}:scoreColor(e.score);
+      const members=visibleMembersOf(id);
+      html+=`<div class="exp-block" data-exp="${id}">
+        <div class="exp-title">${e.title}${members.length?`<span class="ec-gbadge">🔗 合并 ${members.length+1} 段</span>`:''}<span class="tier-chip ${tier}">${TIER_LABEL[tier]}</span><span class="score-badge" style="background:${sc.bg};color:${sc.fg};border-color:${sc.bd}" title="相关分 ${e.score}/10，颜色越深代表与目标 JD 越相关">相关分 ${e.score}</span></div>
+        <div class="exp-meta">${e.time}</div>`;
+      if(blocks.length===0){
+        html+=`<div class="sentence" style="color:var(--muted);cursor:default">（该经历由编辑恢复，原文与岗位弱相关，可直接在此补写）</div>`;
+      }else{
+        blocks.forEach(b=>{html+=sentenceHtml(b);});
+      }
+      members.forEach(mid=>{html+=slimMemberHtml(mid);});
+      html+='</div>';
+    });
+  });
+  body.innerHTML=html;
+  if(slimSortable){slimSortable.destroy();slimSortable=null;}
+}
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function renderResultHeader(){
+  // 顶部提示行：当前匹配岗位 + 改写原则
+  const banner=document.getElementById('match-banner');
+  let jobName='后端开发工程师（AI Agent）';
+  if(state.jd && state.jd.text){
+    const firstLine=state.jd.text.split('\n').map(l=>l.trim()).find(l=>l);
+    if(firstLine)jobName=firstLine;
+  }
+  banner.innerHTML=`当前匹配：<b>${escapeHtml(jobName)}</b>｜改写原则：保留全部事实，不虚构经历`;
+}
+
+/* ================= 双向悬停高亮 ================= */
+const colOrig=document.getElementById('col-original');
+const colSlim=document.getElementById('col-slim');
+function clearHl(){
+  colOrig.querySelectorAll('.src.hl').forEach(el=>el.classList.remove('hl'));
+  colSlim.querySelectorAll('.sentence.hl').forEach(el=>el.classList.remove('hl'));
+}
+colSlim.addEventListener('mouseover',e=>{
+  const s=e.target.closest('.sentence');if(!s||s.classList.contains('edited'))return;
+  clearHl();
+  const ids=(s.dataset.src||'').split(' ');
+  ids.forEach(id=>colOrig.querySelector(`.src[data-id="${id}"]`)?.classList.add('hl'));
+  s.classList.add('hl');
+});
+colSlim.addEventListener('mouseout',e=>{
+  if(e.target.closest('.sentence')) clearHl();
+});
+// 点击瘦身句 → 跳转到左栏对应原文并高亮
+colSlim.addEventListener('click',e=>{
+  if(state.editing)return; // 编辑态点击为编辑，不触发跳转
+  const s=e.target.closest('.sentence');if(!s||s.classList.contains('edited'))return;
+  const ids=(s.dataset.src||'').split(' ');
+  let target=null;
+  for(const id of ids){const el=colOrig.querySelector(`.src[data-id="${id}"]`);if(el){target=el;break;}}
+  if(target){
+    clearHl();
+    ids.forEach(id=>colOrig.querySelector(`.src[data-id="${id}"]`)?.classList.add('hl'));
+    s.classList.add('hl');
+    // 精确滚动左栏容器，使来源段落居中可见
+    const col=colOrig;
+    const cRect=col.getBoundingClientRect();
+    const eRect=target.getBoundingClientRect();
+    const relTop=eRect.top-cRect.top+col.scrollTop; // 元素在可滚动内容中的绝对位置
+    col.scrollTop=Math.max(0,relTop-col.clientHeight/2+target.offsetHeight/2);
+    target.animate([{background:'rgba(94,106,210,.35)'},{background:'rgba(94,106,210,.16)'}],{duration:500});
+  }
+});
+colOrig.addEventListener('mouseover',e=>{
+  const s=e.target.closest('.src');if(!s)return;
+  clearHl();
+  const id=s.dataset.id;
+  colSlim.querySelectorAll(`.sentence[data-src~="${id}"]`).forEach(el=>el.classList.add('hl'));
+  s.classList.add('hl');
+});
+colOrig.addEventListener('mouseout',e=>{
+  if(e.target.closest('.src')) clearHl();
+});
+// 点击左栏段落 → 中栏对应句子高亮 + 跳转
+colOrig.addEventListener('click',e=>{
+  if(state.editing)return;
+  const s=e.target.closest('.src');if(!s)return;
+  const id=s.dataset.id;
+  const targets=colSlim.querySelectorAll(`.sentence[data-src~="${id}"]:not(.edited)`);
+  if(targets.length===0)return;
+  clearHl();
+  targets.forEach(el=>el.classList.add('hl'));
+  s.classList.add('hl');
+  const target=targets[0];
+  const cRect=colSlim.getBoundingClientRect();
+  const eRect=target.getBoundingClientRect();
+  const relTop=eRect.top-cRect.top+colSlim.scrollTop;
+  colSlim.scrollTop=Math.max(0,relTop-colSlim.clientHeight/2+target.offsetHeight/2);
+});
+
+/* ================= 中栏编辑入口 → 跳转编辑页 ================= */
+const btnEdit=document.getElementById('btn-edit');
+function showToast(msg){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';t.className='toast';document.body.appendChild(t);}
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+btnEdit.addEventListener('click',()=>{ openEditPage('result'); });
+
+/* ================= 导出 Markdown / 纯文本 ================= */
+const exportBtn=document.getElementById('export-btn');
+const exportMenu=document.getElementById('export-menu');
+exportBtn.addEventListener('click',e=>{e.stopPropagation();exportMenu.classList.toggle('show');});
+document.addEventListener('click',()=>exportMenu.classList.remove('show'));
+exportMenu.addEventListener('click',e=>e.stopPropagation());
+exportMenu.querySelectorAll('button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const fmt=b.dataset.export;
+    exportMenu.classList.remove('show');
+    const content=buildExportContent(fmt);
+    downloadFile(content,fmt==='md'?'瘦身简历.md':'瘦身简历.txt');
+  });
+});
+function buildExportContent(fmt){
+  const lines=[];
+  const pushBlocks=(blocks)=>{
+    blocks.forEach(b=>{
+      const text=state.edits[b.id]??b.text;
+      if(fmt==='md')lines.push(`- ${text}`);
+      else lines.push(`  - ${text}`);
+    });
+  };
+  ['core','related','other'].forEach(tier=>{
+    const ids=visibleLeadersByTier(tier);
+    if(ids.length===0)return;
+    if(fmt==='md')lines.push(`## ${TIER_LABEL[tier]}`,'');
+    ids.forEach(id=>{
+      const e=EXPS[id];
+      if(fmt==='md')lines.push(`### ${e.title}（${e.time}）`,'');
+      else lines.push(`${e.title}（${e.time}）`);
+      pushBlocks(BLOCKS[id]||[]);
+      // 合并组成员：小标题 + 句子
+      visibleMembersOf(id).forEach(mid=>{
+        const m=EXPS[mid];
+        if(fmt==='md')lines.push(`- **【合并】${m.title}（${m.time}）**`);
+        else lines.push(`  · 【合并】${m.title}（${m.time}）`);
+        pushBlocks(BLOCKS[mid]||[]);
+      });
+      lines.push('');
+    });
+  });
+  return lines.join('\n');
+}
+function downloadFile(content,filename){
+  const blob=new Blob([content],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download(filename);a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ================= 点击右栏改动条目 → 同时高亮左+中 ================= */
+function bindChangeItems(){
+  document.querySelectorAll('.change-item').forEach(item=>{
+    item.addEventListener('click',()=>{
+      const exp=item.dataset.exp;if(!exp)return;
+      clearHl();
+      const expSrcIds=(BLOCKS[exp]||[]).flatMap(b=>b.src);
+      expSrcIds.forEach(id=>colOrig.querySelector(`.src[data-id="${id}"]`)?.classList.add('hl'));
+      colSlim.querySelectorAll(`.exp-block[data-exp="${exp}"] .sentence`).forEach(el=>el.classList.add('hl'));
+      // 滚动中栏到对应经历
+      const target=colSlim.querySelector(`.exp-block[data-exp="${exp}"]`);
+      if(target){
+        const cRect=colSlim.getBoundingClientRect();
+        const eRect=target.getBoundingClientRect();
+        const relTop=eRect.top-cRect.top+colSlim.scrollTop;
+        colSlim.scrollTop=Math.max(0,relTop-colSlim.clientHeight/2+target.offsetHeight/2);
+      }
+    });
+  });
+}
+bindChangeItems();
+
+/* ================= 编辑页：经历整理（勾选/删除/恢复/排序/合并） ================= */
+const EDIT_TIER_LABEL={core:'核心内容',related:'相关内容',other:'其他内容'};
+let editSortable=null, editDragId=null, editMergeTarget=null;
+
+function openEditPage(from){
+  if(!state.editPlan) state.editPlan = from==='result' ? makeSystemPlan() : makeManualPlan();
+  state.editReturn=from||'home';
+  document.getElementById('edit-back').textContent = state.editReturn==='result'?'← 返回结果页':'← 返回首页';
+  renderEdit();
+  showView('view-edit');
+}
+function editActionsText(id){
+  return (EXPS[id].cardActions||[]).slice(0,2).map(a=>'· '+a).join('<br>');
+}
+
+function renderEdit(){
+  const p=state.editPlan; if(!p)return;
+  const listEl=document.getElementById('edit-list');
+  let html='';
+  p.kept.forEach(id=>{
+    const e=EXPS[id];
+    const members=p.groups[id]||[];
+    const on=p.selected.includes(id);
+    html+=`<div class="drag-card leader${on?'':' unchecked'}" data-eid="${id}">
+      <div class="drag-grip" title="拖拽调整顺序；拖到其他卡片上可合并">⠿</div>
+      <label class="ec-check"><input type="checkbox" data-check="${id}" ${on?'checked':''}></label>
+      <div class="drag-body">
+        <div class="drag-card-top">
+          <span class="drag-title">${e.title}</span>
+          <span class="tier-chip ${e.tier}">${EDIT_TIER_LABEL[e.tier]}</span>
+          <span class="drag-score">相关度 ${e.score}</span>
+          ${members.length?`<span class="ec-gbadge">🔗 已合并 ${members.length+1} 段</span>`:''}
+        </div>
+        <div class="drag-role">${e.role}</div>
+        <div class="drag-actions">${editActionsText(id)}</div>`;
+    if(members.length){
+      html+='<div class="ec-members">';
+      members.forEach(mid=>{
+        const m=EXPS[mid];
+        html+=`<div class="drag-card member" data-mid="${mid}">
+          <div class="drag-body">
+            <div class="drag-card-top">
+              <span class="drag-title">${m.title}</span>
+              <span class="tier-chip ${m.tier}">${EDIT_TIER_LABEL[m.tier]}</span>
+              <span class="drag-score">相关度 ${m.score}</span>
+            </div>
+            <div class="drag-role">${m.role}</div>
+            <div class="drag-actions">${editActionsText(mid)}</div>
+          </div>
+          <button class="ec-out" data-out="${mid}">移出本组</button>
+        </div>`;
+      });
+      html+=`<button class="ec-ungroup" data-ungroup="${id}">🔓 取消合并（拆出 ${members.length} 段）</button></div>`;
+    }
+    html+=`</div><button class="drag-del" data-del="${id}" title="删除（可在下方回收站恢复）">✕</button></div>`;
+  });
+  listEl.innerHTML=html;
+
+  // 回收站
+  const trashEl=document.getElementById('edit-trash');
+  let th='';
+  p.removed.forEach(id=>{
+    const e=EXPS[id]; const cnt=(p.groups[id]||[]).length;
+    th+=`<div class="drag-card" data-eid="${id}">
+      <div class="drag-body">
+        <div class="drag-card-top">
+          <span class="drag-title">${e.title}</span>
+          <span class="tier-chip ${e.tier}">${EDIT_TIER_LABEL[e.tier]}</span>
+          <span class="drag-score">相关度 ${e.score}</span>
+          ${cnt?`<span class="ec-gbadge">🔗 合并 ${cnt+1} 段</span>`:''}
+        </div>
+        <div class="drag-role">${e.role}</div>
+      </div>
+      <button class="drag-restore" data-restore="${id}">恢复</button>
+    </div>`;
+  });
+  trashEl.innerHTML=th||'<div style="font-size:12.5px;color:var(--muted-2);padding:6px 2px">暂无删除的经历</div>';
+
+  // 计数 / 全选 / 合并按钮可用性
+  const selectedLeaders=p.kept.filter(id=>p.selected.includes(id));
+  const memberCount=Object.values(p.groups).flat()
+    .filter(id=>p.selected.includes(id)&&!p.removed.includes(id)).length;
+  document.getElementById('ec-count').textContent=
+    `主列表 ${p.kept.length} 组 · 共 ${p.kept.length+memberCount} 段 · 已勾选 ${selectedLeaders.length} 组 · 回收站 ${p.removed.length} 段`;
+  document.getElementById('ec-all').checked=p.kept.length>0&&selectedLeaders.length===p.kept.length;
+  document.getElementById('btn-merge-group').disabled=selectedLeaders.length<2;
+
+  if(editSortable){editSortable.destroy();editSortable=null;}
+  editSortable=Sortable.create(listEl,{
+    draggable:'.drag-card.leader',
+    ghostClass:'sortable-ghost',chosenClass:'sortable-chosen',dragClass:'sortable-drag',
+    animation:180,easing:'cubic-bezier(0.2,0,0.2,1)',
+    onStart:evt=>{editDragId=evt.item.dataset.eid;editMergeTarget=null;},
+    onEnd:()=>{
+      const dragId=editDragId,target=editMergeTarget;
+      editDragId=null;editMergeTarget=null;
+      listEl.querySelectorAll('.drop-target').forEach(el=>el.classList.remove('drop-target'));
+      if(target&&target!==dragId){
+        mergeGroup(dragId,target); // 释放在卡片上 → 合并
+      }else{
+        const order=[...listEl.querySelectorAll(':scope > .drag-card.leader')].map(el=>el.dataset.eid);
+        if(order.length===p.kept.length) p.kept=order; // 释放在间隙 → 排序
+      }
+      renderEdit();
+    }
+  });
+  saveHomeState();
+}
+
+// 拖拽过程中实时判定落点：拖到卡面=合并目标，拖到间隙=普通排序
+document.addEventListener('dragover',e=>{
+  if(!editDragId) return;
+  const listEl=document.getElementById('edit-list');
+  if(!listEl || !listEl.offsetParent) return; // 编辑页未显示时忽略
+  const card=e.target.closest&&e.target.closest('#edit-list > .drag-card.leader');
+  const target=(card&&card.dataset.eid!==editDragId)?card.dataset.eid:null;
+  if(target!==editMergeTarget){
+    listEl.querySelectorAll('.drop-target').forEach(el=>el.classList.remove('drop-target'));
+    editMergeTarget=target;
+    if(target) listEl.querySelector(`.drag-card.leader[data-eid="${target}"]`)?.classList.add('drop-target');
+  }
+});
+
+// ---- plan 操作 ----
+function removeExp(id){ // 删除：leader 连同其组成员一起进回收站
+  const p=state.editPlan;
+  const i=p.kept.indexOf(id); if(i<0)return;
+  const members=(p.groups[id]||[]).slice();
+  p.kept.splice(i,1);
+  [id,...members].forEach(x=>{if(!p.removed.includes(x))p.removed.push(x);});
+  renderEdit();
+}
+function restoreExp(id){ // 恢复：整组回到主列表末尾
+  const p=state.editPlan;
+  const i=p.removed.indexOf(id); if(i<0)return;
+  p.removed.splice(i,1);
+  (p.groups[id]||[]).forEach(m=>{const mi=p.removed.indexOf(m);if(mi>=0)p.removed.splice(mi,1);});
+  if(!p.kept.includes(id))p.kept.push(id);
+  if(!p.selected.includes(id))p.selected.push(id);
+  renderEdit();
+}
+function mergeGroup(fromId,toId){ // 把 fromId 整组（含成员）并入 toId
+  const p=state.editPlan;
+  const fi=p.kept.indexOf(fromId); if(fi<0)return;
+  p.kept.splice(fi,1);
+  const fromMembers=(p.groups[fromId]||[]).slice();
+  p.groups[toId]=(p.groups[toId]||[]).concat([fromId],fromMembers);
+  delete p.groups[fromId];
+}
+function outMember(mid){ // 成员移出本组 → 成为独立卡片
+  const p=state.editPlan;
+  for(const lid of Object.keys(p.groups)){
+    const arr=p.groups[lid],i=arr.indexOf(mid);
+    if(i>=0){
+      arr.splice(i,1);
+      p.kept.splice(p.kept.indexOf(lid)+1,0,mid);
+      if(!arr.length)delete p.groups[lid];
+      break;
+    }
+  }
+  renderEdit();
+}
+function ungroup(lid){ // 整组解散：成员插回组首之后
+  const p=state.editPlan; const arr=p.groups[lid]; if(!arr)return;
+  const li=p.kept.indexOf(lid);
+  arr.slice().reverse().forEach(m=>p.kept.splice(li+1,0,m));
+  delete p.groups[lid];
+  renderEdit();
+}
+function mergeSelected(){ // 勾选合并：所选 leaders 全部并入第一个
+  const p=state.editPlan;
+  const ids=p.kept.filter(id=>p.selected.includes(id));
+  if(ids.length<2)return;
+  ids.slice(1).forEach(id=>mergeGroup(id,ids[0]));
+  renderEdit();
+}
+function toggleSelect(id,on){
+  const p=state.editPlan;
+  const i=p.selected.indexOf(id);
+  if(on&&i<0)p.selected.push(id);
+  if(!on&&i>=0)p.selected.splice(i,1);
+  renderEdit();
+}
+function finishEdit(){ // 完成：未勾选的入回收站，按 plan 重渲染结果页
+  const p=state.editPlan;
+  p.kept.slice().forEach(id=>{
+    if(!p.selected.includes(id)){
+      const members=(p.groups[id]||[]).slice();
+      p.kept.splice(p.kept.indexOf(id),1);
+      [id,...members].forEach(x=>{if(!p.removed.includes(x))p.removed.push(x);});
+      delete p.groups[id];
+    }
+  });
+  state.order=p.kept.slice();
+  state.deleted=p.removed.slice();
+  state.generated=true;
+  state.snapshot=snap();
+  state.editing=false;
+  renderSlim();renderResultHeader();
+  showView('view-result');
+  updateGenerateBtn();
+  showToast('已按你的整理生成瘦身简历');
+}
+
+// ---- 事件委托（静态容器，绑定一次） ----
+document.getElementById('edit-list').addEventListener('change',e=>{
+  const cb=e.target.closest('[data-check]'); if(cb)toggleSelect(cb.dataset.check,cb.checked);
+});
+document.getElementById('edit-list').addEventListener('click',e=>{
+  const del=e.target.closest('[data-del]');
+  const out=e.target.closest('[data-out]');
+  const ug=e.target.closest('[data-ungroup]');
+  if(del)removeExp(del.dataset.del);
+  else if(out)outMember(out.dataset.out);
+  else if(ug)ungroup(ug.dataset.ungroup);
+});
+document.getElementById('edit-trash').addEventListener('click',e=>{
+  const r=e.target.closest('[data-restore]'); if(r)restoreExp(r.dataset.restore);
+});
+document.getElementById('ec-all').addEventListener('change',e=>{
+  const p=state.editPlan; if(!p)return;
+  if(e.target.checked){ p.kept.forEach(id=>{if(!p.selected.includes(id))p.selected.push(id);}); }
+  else{ p.selected=p.selected.filter(id=>!p.kept.includes(id)); }
+  renderEdit();
+});
+document.getElementById('btn-merge-group').addEventListener('click',mergeSelected);
+document.getElementById('edit-done').addEventListener('click',()=>{ if(state.editPlan)finishEdit(); });
+function leaveEdit(){ showView(state.editReturn==='result'?'view-result':'view-home'); }
+document.getElementById('edit-back').addEventListener('click',leaveEdit);
+document.getElementById('edit-cancel').addEventListener('click',leaveEdit);
+
+/* ================= 收起左栏 + 报告折叠 ================= */
+const colsEl=document.querySelector('.cols');
+document.getElementById('collapse-left').addEventListener('click',function(){
+  document.getElementById('col-original').classList.toggle('collapsed');
+  colsEl.classList.toggle('hide-left');
+  this.textContent=colsEl.classList.contains('hide-left')?'展开原文':'收起原文';
+});
+document.getElementById('btn-toggle-report').addEventListener('click',function(){
+  const detail=document.getElementById('report-detail');
+  const collapsed=detail.classList.toggle('collapsed');
+  this.textContent=collapsed?'查看完整匹配报告':'收起完整匹配报告';
+  document.getElementById('view-result').classList.toggle('report-open',!collapsed);
+});
+
+/* ================= sessionStorage 保留首页状态 ================= */
+function saveHomeState(){
+  try{
+    sessionStorage.setItem('tf-home-v2',JSON.stringify({
+      resume:state.resume,jd:state.jd,
+      scores:state.scores,checked:state.checked,preset:state.preset,
+      generated:state.generated,snapshot:state.snapshot,
+      editPlan:state.editPlan,order:state.order,deleted:state.deleted
+    }));
+  }catch(e){}
+}
+function loadHomeState(){
+  let d=null;
+  try{d=JSON.parse(sessionStorage.getItem('tf-home-v2')||'null');}catch(e){}
+  if(!d)return false;
+  if(d.resume)state.resume=d.resume;
+  if(d.jd)state.jd=d.jd;
+  if(d.scores)state.scores=d.scores;
+  if(d.checked)state.checked=d.checked;
+  if(d.preset)state.preset=d.preset;
+  if(d.generated)state.generated=true;
+  if(d.snapshot)state.snapshot=d.snapshot;
+  if(d.editPlan)state.editPlan=d.editPlan;
+  if(Array.isArray(d.order))state.order=d.order;
+  if(Array.isArray(d.deleted))state.deleted=d.deleted;
+  return true;
+}
+// 状态变化时持久化（resume/jd 在 initPanel / sample / clear / input 处已改 state，统一在 updateGenerateBtn 时存）
+const _origUpdateGen=updateGenerateBtn;
+updateGenerateBtn=function(){saveHomeState();_origUpdateGen.apply(this,arguments);};
+
+/* ================= init ================= */
+const restored=loadHomeState();
+renderDims();
+syncPresetActive();
+// 还原上传区显示
+function refreshUploadedExternal(kind){
+  const card=document.getElementById('card-'+kind);
+  if(!state[kind])return;
+  const loaded=card.querySelector('.loaded-box');
+  const drop=card.querySelector('.dropzone');
+  const paste=card.querySelector('.paste-area');
+  const preview=document.getElementById(kind+'-lb-preview');
+  loaded.classList.remove('hidden');
+  drop.classList.add('hidden');
+  paste.classList.add('hidden');
+  const tag=card.querySelector('.upload-card-head .tag');
+  tag.textContent='已上传';tag.classList.add('ok');
+  document.getElementById(kind+'-lb-name').textContent=state[kind].name;
+  document.getElementById(kind+'-lb-meta').textContent=state[kind].text.length+' 字符';
+  preview.textContent=state[kind].text;
+  uploadEditState[kind]={editing:false,original:state[kind].text};
+}
+if(restored){
+  if(state.resume)refreshUploadedExternal('resume');
+  if(state.jd)refreshUploadedExternal('jd');
+}
+updateGenerateBtn();
+renderOriginal();
+renderSlim();
+</script>
+</body>
+</html>

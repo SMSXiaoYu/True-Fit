@@ -1,0 +1,42 @@
+# ===== 密钥（绝不提交） =====
+.env
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+
+# ===== 编辑器 / IDE =====
+.obsidian/
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ===== 上传任务产物（每次上传生成，不进 git）=====
+data/jobs/
+
+# ===== 上传产物的"标准样本"保留，但"带时间戳的产物"不进 git =====
+data/original/resumes/王晓宇*.pdf
+data/extracted/resumes/2026*.json
+data/extracted/jds/2026*.json
+data/output/changes_2026*.json
+
+# ===== 备份文件 / 副本 =====
+*副本*.html
+*- 副本*.html
+*- 旧.html
+* - 旧.html
+*旧.html
+
+# ===== 竞品仓库（在 notes/ 里，是别人的代码，不进 git）=====
+notes/GitHub_CounterPart/
+
+# ===== 临时文件 =====
+*.tmp
+*.log
