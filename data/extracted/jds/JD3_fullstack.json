@@ -1,0 +1,66 @@
+{
+  "jd_id": "JD3_fullstack",
+  "version": "1.0",
+  "generated_at": "2026-09-17T10:00:00Z",
+  "title": "全栈工程师（AI产品）",
+  "requirements": {
+    "hard": {
+      "education": "不卡学历",
+      "experience": "不卡年限",
+      "preferred": ["看实战与潜力"]
+    },
+    "skills": [
+      { "item": "前端 HTML5/CSS3/JS", "weight": 3 },
+      { "item": "Vue/React", "weight": 3 },
+      { "item": "Node/Java/Python/PHP", "weight": 3 },
+      { "item": "MySQL/MongoDB/Redis", "weight": 3 },
+      { "item": "Linux/Docker/Nginx", "weight": 2 },
+      { "item": "云服务器部署", "weight": 2 },
+      { "item": "支付系统对接", "weight": 2 }
+    ],
+    "responsibilities": [
+      { "item": "前后端全栈开发", "weight": 3 },
+      { "item": "支付系统对接", "weight": 3 },
+      { "item": "部署与运维", "weight": 2 },
+      { "item": "AI产品落地", "weight": 2 }
+    ],
+    "industry": {
+      "required": ["AI产品"],
+      "preferred": ["创业团队", "MVP经验"]
+    },
+    "level": {
+      "years": null,
+      "title": null
+    }
+  },
+  "source_store": {
+    "R1": "不卡学历、不卡专业、不卡工作年限，高中生只要有拿得出手的项目也欢迎来聊",
+    "D1": "前端:熟练使用HTML5/CSS3/JavaScript，用过Vue/React等主流框架，能实现流畅的交互与优化",
+    "D2": "后端:掌握Node.js/Java/Python/PHP任一后端语言，熟悉MySQL/MongoDB/Redis等数据库与缓存技术；有第三方支付系统对接实战经验",
+    "D3": "熟悉Linux基础操作，会用Docker、Nginx，了解阿里云/腾讯云等云服务器部署流程，能独立完成产品上线、迭代维护全流程",
+    "D4": "对AI产品、vibe Coding有深入理解，了解AI应用开发逻辑，有MVP产品从0到1商业化落地、快速迭代经验者优先"
+  },
+  "source_map": {
+    "hard.education": ["R1"],
+    "hard.experience": ["R1"],
+    "hard.preferred": ["R1"],
+
+    "skills[0]": ["D1"],
+    "skills[1]": ["D1"],
+    "skills[2]": ["D2"],
+    "skills[3]": ["D2"],
+    "skills[4]": ["D3"],
+    "skills[5]": ["D3"],
+    "skills[6]": ["D2"],
+
+    "responsibilities[0]": ["D1"],
+    "responsibilities[1]": ["D2"],
+    "responsibilities[2]": ["D3"],
+    "responsibilities[3]": ["D4"],
+
+    "industry.required": ["D4"],
+    "industry.preferred": ["D4"],
+
+    "level.years": ["R1"]
+  }
+}

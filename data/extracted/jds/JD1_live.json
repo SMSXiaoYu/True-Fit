@@ -1,0 +1,154 @@
+{
+  "jd_id": "JD1_live",
+  "title": null,
+  "requirements": {
+    "hard": {
+      "education": "本科及以上",
+      "experience": "1-3年后端开发经验",
+      "preferred": [
+        "大厂经历优先",
+        "有Agent/大模型应用开发经验优先"
+      ]
+    },
+    "skills": [
+      {
+        "item": "Java/Go",
+        "weight": 3
+      },
+      {
+        "item": "计算机基础",
+        "weight": 3
+      },
+      {
+        "item": "MySQL",
+        "weight": 3
+      },
+      {
+        "item": "Redis",
+        "weight": 3
+      },
+      {
+        "item": "分布式基础",
+        "weight": 2
+      },
+      {
+        "item": "Linux",
+        "weight": 3
+      },
+      {
+        "item": "独立开发、故障排查能力",
+        "weight": 3
+      },
+      {
+        "item": "AI智能体",
+        "weight": 1,
+        "type": "bonus"
+      },
+      {
+        "item": "向量数据库",
+        "weight": 1,
+        "type": "bonus"
+      },
+      {
+        "item": "LLM服务对接",
+        "weight": 1,
+        "type": "bonus"
+      }
+    ],
+    "responsibilities": [
+      {
+        "item": "AIAgent后端服务开发，实现智能体调度、工具调用、记忆模块、对话链路等功能开发",
+        "weight": 3
+      },
+      {
+        "item": "业务后端接口开发、系统优化、线上问题排查，保障服务稳定运行",
+        "weight": 3
+      },
+      {
+        "item": "参与技术方案设计，跟进大模型相关技术落地",
+        "weight": 2
+      }
+    ],
+    "industry": {
+      "required": [],
+      "preferred": [
+        "教育行业"
+      ]
+    },
+    "level": {
+      "years": "1-3年",
+      "title": null
+    }
+  },
+  "source_store": {
+    "D1": "负责AIAgent后端服务开发，实现智能体调度、工具调用、记忆模块、对话链路等功能开发",
+    "D2": "业务后端接口开发、系统优化、线上问题排查，保障服务稳定运行",
+    "D3": "参与技术方案设计，跟进大模型相关技术落地",
+    "R1": "本科及以上，1-3年后端开发经验，大厂经历优先",
+    "R2": "熟练Java/Go其一，扎实计算机基础",
+    "R3": "熟悉MySQL、Redis，了解分布式基础;有Agent/大模型应用开发经验优先",
+    "R4": "熟悉Linux，具备独立开发、故障排查能力",
+    "B1": "有AI智能体、向量数据库、LLM服务对接项目经验、教育行业从业经验"
+  },
+  "source_map": {
+    "hard.education": [
+      "R1"
+    ],
+    "hard.experience": [
+      "R1"
+    ],
+    "hard.preferred[0]": [
+      "R1"
+    ],
+    "hard.preferred[1]": [
+      "R3"
+    ],
+    "skills[0]": [
+      "R2"
+    ],
+    "skills[1]": [
+      "R2"
+    ],
+    "skills[2]": [
+      "R3"
+    ],
+    "skills[3]": [
+      "R3"
+    ],
+    "skills[4]": [
+      "R3"
+    ],
+    "skills[5]": [
+      "R4"
+    ],
+    "skills[6]": [
+      "R4"
+    ],
+    "skills[7]": [
+      "B1"
+    ],
+    "skills[8]": [
+      "B1"
+    ],
+    "skills[9]": [
+      "B1"
+    ],
+    "responsibilities[0]": [
+      "D1"
+    ],
+    "responsibilities[1]": [
+      "D2"
+    ],
+    "responsibilities[2]": [
+      "D3"
+    ],
+    "industry.required": [],
+    "industry.preferred": [
+      "B1"
+    ],
+    "level.years": [
+      "R1"
+    ],
+    "level.title": []
+  }
+}

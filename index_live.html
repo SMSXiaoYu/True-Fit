@@ -1,0 +1,2668 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>TrueFit 简旨 — 简历智能瘦身（Live 数据）</title>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+<style>
+/* ============ Base ============ */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --primary:#5e6ad2; --primary-hover:#4f5cc0; --primary-soft:#eef0fc;
+  --text:#1f2329; --text-2:#4b5563; --muted:#8a8f98; --muted-2:#b0b5bd;
+  --border:#e5e7eb; --border-strong:#d6d9de; --bg:#f6f6f8; --panel:#ffffff;
+  --green:#16a34a; --green-soft:#e8f7ee; --amber:#b45309; --amber-soft:#fdf3e3;
+  --red:#dc2626; --core:#5e6ad2; --related:#d97706; --other:#8a8f98;
+  --radius:10px;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
+  --shadow-lg:0 12px 40px rgba(16,24,40,.16);
+}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  color:var(--text);background:var(--bg);font-size:14px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;min-width:1180px;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea{font-family:inherit}
+::selection{background:#dfe3fb}
+.hidden{display:none!important}
+
+/* ============ Common ============ */
+.app-header{
+  height:54px;background:var(--panel);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex:none;
+}
+.logo{display:flex;align-items:baseline;gap:8px;font-weight:700;font-size:17px;letter-spacing:.2px}
+.logo .mark{color:var(--primary)}
+.logo .sub{font-size:12px;color:var(--muted);font-weight:500}
+.text-link{color:var(--primary);font-size:13px;font-weight:500}
+.text-link:hover{text-decoration:underline}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;font-size:14px;font-weight:500;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--primary);color:#fff;padding:10px 18px}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-secondary{background:#fff;color:var(--text);border:1px solid var(--border-strong);padding:10px 16px}
+
+/* ============ View ============ */
+.view-page{display:none;flex-direction:column;height:100vh}
+.view-page.active{display:flex}
+
+#view-result .cols{flex:1;display:flex;flex-direction:column;min-height:0;gap:14px;padding:16px;background:var(--bg);overflow-y:auto}
+.cols-top{display:flex;gap:14px;height:calc(100vh - 80px);min-height:400px}
+.col{min-width:0;overflow-y:auto;background:var(--panel);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.col-original{flex:1}
+.col-slim{flex:3}
+.col-head{
+  position:sticky;top:0;z-index:5;margin-bottom:4px;padding:14px 20px 12px;
+  background:#fafbfd;border-bottom:1px solid var(--border);border-radius:14px 14px 0 0;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex:none;
+}
+.col-head h2{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.col-head .desc{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+.col-head .col-btn{padding:5px 12px;border-radius:7px;font-size:12.5px;font-weight:500;flex:none;background:var(--primary-soft);color:var(--primary);border:1px solid #dfe3fb}
+.col-body{padding:18px 20px 40px}
+.col-slim .col-body{font-size:15px;line-height:1.5;background:#fff}
+.col-original .col-body{font-size:13px;line-height:1.65;background:#F9FAFB}
+.col-slim .sentence{font-size:15px;line-height:1.5;padding:4px 8px 4px 16px}
+.col-slim .exp-title{font-size:15.5px}
+.col-slim .exp-meta{font-size:12.5px}
+
+/* 底部匹配报告 */
+.report-wrap{flex:none;background:var(--panel);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.report-summary{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px;text-align:center}
+.rs-score{font-size:30px;font-weight:700;color:var(--primary);line-height:1.2}
+.rs-score small{font-size:14px;color:var(--muted);font-weight:400}
+.rs-verdict{font-size:13px;color:var(--text-2);line-height:1.7;max-width:85%}
+.btn-toggle-report{padding:8px 20px;border-radius:8px;font-size:13px;font-weight:500;background:var(--primary-soft);color:var(--primary);border:1px solid #dfe3fb;cursor:pointer;margin-top:4px}
+.report-detail{border-top:1px solid var(--border);padding:18px 20px 30px;background:#F9FAFB;font-size:13px;line-height:1.65}
+.report-detail.collapsed{display:none}
+
+.match-banner{flex:none;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 20px;background:#fffbe8;border-bottom:1px solid #f0e6b8;font-size:12.5px;color:#7a5a16}
+.match-banner b{font-weight:600;color:#5b4509}
+
+/* 左栏原文 */
+.res-name{font-size:18px;font-weight:700;margin-bottom:2px}
+.res-sub{font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.res-sec{margin-bottom:16px}
+.res-sec-title{font-size:12.5px;font-weight:600;color:var(--primary);letter-spacing:1px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid #efeff2}
+.src{display:block;font-size:13px;color:var(--text-2);line-height:1.75;padding:1px 5px;margin:1px -5px;border-radius:5px;transition:background .12s;cursor:default;white-space:pre-wrap}
+.src.hl{background:rgba(94,106,210,.16);color:var(--text)}
+.skill-line{font-size:12.5px;color:var(--text-2);line-height:1.8}
+.skill-line b{font-weight:600;color:var(--text)}
+
+/* 中栏瘦身 */
+.tier-header{position:relative;display:flex;align-items:center;justify-content:flex-end;margin:26px 0 14px;min-height:30px}
+.tier-header:first-child{margin-top:4px}
+.tier-header .t-name{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:18px;letter-spacing:2px;white-space:nowrap;color:#1f2329}
+.tier-header .t-count{font-size:11.5px;color:var(--muted)}
+.tier-core .t-name{font-weight:700}
+.tier-related .t-name{font-weight:400}
+.tier-other .t-name{font-weight:400;color:var(--other)}
+.exp-block{border:1px solid var(--border);border-radius:10px;padding:13px 15px;margin-bottom:12px;background:#fff;transition:border-color .15s,box-shadow .15s}
+.exp-block:hover{box-shadow:var(--shadow)}
+.exp-title{font-size:14.5px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tier-chip{font-size:10.5px;padding:1px 8px;border-radius:20px;font-weight:500}
+.tier-chip.core{background:#eef0fd;color:var(--core)}
+.tier-chip.related{background:#f2f4fe;color:#7881d4}
+.tier-chip.other{background:#f1f1f4;color:var(--other)}
+.exp-meta{font-size:12px;color:var(--muted);margin:3px 0 9px}
+.sentence{position:relative;font-size:13px;color:var(--text-2);line-height:1.75;padding:3px 8px 3px 16px;margin:0 -8px;border-radius:7px;cursor:default;transition:background .12s}
+.sentence::before{content:"";position:absolute;left:6px;top:12px;width:4px;height:4px;border-radius:50%;background:#c4c8d0}
+.sentence:hover{background:#f4f5fa}
+.sentence.hl{background:rgba(94,106,210,.16);color:var(--text)}
+.sentence::after{content:attr(data-op-label);position:absolute;right:8px;top:5px;font-size:10.5px;padding:0 7px;border-radius:20px;background:#eef0f3;color:var(--muted);opacity:0;transition:.12s;pointer-events:none}
+.sentence:hover::after{opacity:1}
+.score-badge{display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:20px;margin-left:8px;line-height:1.5;border:1px solid rgba(94,106,210,.18);cursor:default;white-space:nowrap}
+.slim-member{margin:10px -4px 2px;padding:8px 10px 6px;border-top:1px dashed var(--border);background:#fafbfe;border-radius:8px}
+.sm-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px}
+.sm-name{font-size:13.5px;font-weight:600}
+.sm-time{font-size:11.5px;color:var(--muted);font-weight:400}
+
+/* 报告 */
+.rp-block{margin-bottom:26px;padding-left:12px}
+.rp-block h4{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.rp-block h4::before{content:"";width:3px;height:14px;border-radius:2px}
+.rp-block.hit h4::before{background:var(--green)}
+.rp-block.miss h4::before{background:var(--amber)}
+.match-item{display:flex;gap:10px;padding:11px 0;border-bottom:1px dashed #efeff2;font-size:12.5px;line-height:1.8;word-break:break-word}
+.match-item:last-child{border-bottom:none}
+.match-dot{width:8px;height:8px;border-radius:50%;margin-top:8px;flex:none}
+.match-item.hit .match-dot{background:var(--green)}
+.match-item.miss .match-dot{background:var(--amber)}
+.match-item .mi-req{font-weight:600;flex:none}
+.match-item .mi-ev{color:var(--muted)}
+
+/* Loading */
+.loading-mask{position:fixed;inset:0;background:rgba(246,246,248,.85);z-index:100;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.loading-mask.show{display:flex}
+.spinner{width:38px;height:38px;border:3px solid #dfe3fb;border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-mask .lm-txt{font-size:14px;color:var(--text-2)}
+
+.err-box{max-width:640px;margin:80px auto;padding:24px 28px;background:#fff;border:1px solid #fdeaea;border-radius:12px;color:#dc2626;font-size:13.5px;line-height:1.8}
+.err-box b{display:block;margin-bottom:8px;font-size:15px}
+
+/* ===== 报告：四维度分数 ===== */
+.dim-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12.5px}
+.dim-bar-row .db-name{width:34px;color:var(--text-2)}
+.dim-bar-row .db-track{flex:1;height:6px;background:#eef0f3;border-radius:4px;overflow:hidden}
+.dim-bar-row .db-fill{height:100%;background:var(--primary);border-radius:4px}
+.dim-bar-row .db-val{width:52px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* ===== 报告：通用区块 ===== */
+.rp-section{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.rp-section:last-child{margin-bottom:0}
+.rp-divider{height:1px;background:linear-gradient(to right,transparent,var(--border-strong),transparent);margin:18px 0}
+
+/* ===== 报告：改动说明 ===== */
+.change-item{display:flex;gap:9px;padding:8px 0;border-bottom:1px dashed #efeff2;font-size:12.5px;line-height:1.65}
+.change-item:last-child{border-bottom:none}
+.change-item:hover{background:#fafbfe;border-radius:6px}
+.op-tag{flex:none;font-size:10.5px;padding:2px 8px;border-radius:5px;height:fit-content;margin-top:2px;font-weight:500;white-space:nowrap}
+.op-tag.cn-verbatim{background:#eef2f4;color:#5b7083}
+.op-tag.cn-compress{background:#e8f0fe;color:#2f63c4}
+.op-tag.cn-reword{background:#f3e8fe;color:#8b3fd1}
+.op-tag.cn-merge{background:#e0f5f1;color:#0e8a74}
+.op-tag.cn-demote{background:#fdf3e3;color:#b45309}
+.op-tag.cn-reorder{background:#eef0fd;color:#5e6ad2}
+.op-tag.cn-omit{background:#fdeaea;color:#dc2626}
+
+/* ===== 报告：补充建议 ===== */
+.sug-list{list-style:none;counter-reset:sug;padding:0;margin:0}
+.sug-list li{counter-increment:sug;position:relative;padding:7px 0 7px 26px;font-size:12.5px;color:var(--text-2);line-height:1.65}
+.sug-list li::before{
+  content:counter(sug);position:absolute;left:0;top:8px;
+  width:18px;height:18px;border-radius:50%;background:var(--primary-soft);color:var(--primary);
+  font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;
+}
+
+/* ============ Home（首页 + 配置抽屉，从 prototype 迁移）============ */
+#view-home{flex-direction:column;height:100vh}
+.home-main{flex:1;display:flex;flex-direction:column;align-items:center;padding:46px 40px 60px;overflow:auto}
+.home-hero{text-align:center;margin-bottom:34px}
+.home-hero h1{font-size:26px;font-weight:700;letter-spacing:.3px}
+.home-hero p{color:var(--muted);margin-top:8px;font-size:14px}
+.upload-row{display:flex;gap:28px;width:100%;max-width:1040px}
+.upload-card{
+  flex:1;background:var(--panel);border:1px solid var(--border);border-radius:14px;
+  box-shadow:var(--shadow);padding:22px;display:flex;flex-direction:column;height:480px;
+}
+.upload-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.upload-card-head h3{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.upload-card-head .tag{font-size:11px;padding:2px 8px;border-radius:20px;background:#f1f1f4;color:var(--muted)}
+.upload-card-head .tag.ok{background:var(--green-soft);color:var(--green)}
+.tabs{display:flex;gap:2px;background:#f1f1f4;border-radius:8px;padding:3px}
+.tabs button{padding:4px 12px;border-radius:6px;font-size:12.5px;color:var(--muted)}
+.tabs button.active{background:#fff;color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.08);font-weight:500}
+.dropzone{
+  flex:1;border:1.5px dashed var(--border-strong);border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  color:var(--muted);cursor:pointer;transition:.15s;padding:24px;text-align:center;
+}
+.dropzone:hover{border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
+.dropzone .dz-icon{font-size:30px;line-height:1}
+.dropzone .dz-main{font-size:14px;color:var(--text-2)}
+.dropzone .dz-sub{font-size:12px;color:var(--muted)}
+.paste-area{flex:1;display:flex;flex-direction:column;gap:8px}
+.paste-area textarea{
+  flex:1;width:100%;border:1px solid var(--border-strong);border-radius:10px;
+  padding:12px 14px;font-size:13px;line-height:1.7;resize:none;color:var(--text);outline:none;
+}
+.paste-area textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(94,106,210,.12)}
+.loaded-box{
+  flex:1;border:1px solid var(--border);border-radius:10px;background:#fbfbfc;padding:14px 16px;
+  display:flex;flex-direction:column;gap:10px;min-height:0;
+}
+.loaded-box .lb-top{display:flex;align-items:center;gap:10px}
+.loaded-box .lb-icon{width:34px;height:34px;border-radius:8px;background:var(--primary-soft);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:17px;flex:none}
+.loaded-box .lb-name{font-weight:600;font-size:13.5px;word-break:break-all}
+.loaded-box .lb-meta{font-size:12px;color:var(--muted)}
+.loaded-box .lb-actions{display:flex;gap:14px;flex-wrap:wrap}
+
+.generate-area{margin-top:36px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.gen-btns{display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap}
+.btn-generate{
+  height:64px;min-width:240px;padding:0 32px;font-size:16px;border-radius:12px;
+  background:var(--primary);color:#fff;font-weight:600;letter-spacing:1px;
+  box-shadow:0 4px 14px rgba(94,106,210,.3);transition:.18s;
+  display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+}
+/* 次按钮：一键生成（与主按钮同行、同高，白底描边次要样式，内含主文案+小灰字两行） */
+.btn-generate-2{
+  height:64px;min-width:220px;padding:0 26px;font-size:15px;border-radius:12px;
+  background:#fff;color:var(--text-2);font-weight:600;letter-spacing:1px;
+  border:1.5px solid var(--border-strong);
+  box-shadow:0 2px 8px rgba(16,24,40,.05);transition:.18s;
+  display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+}
+.btn-main-text{font-size:16px;line-height:1.2;}
+.btn-sub-text{font-size:11px;font-weight:400;letter-spacing:0;opacity:.7;line-height:1.2;}
+.btn-generate-2:hover:not(:disabled){
+  border-color:var(--primary);color:var(--primary);
+  transform:translateY(-1px);box-shadow:0 4px 12px rgba(94,106,210,.12);
+}
+.btn-generate-2:disabled{background:#f2f3f5;color:#a8adb7;border-color:#e6e7ea;box-shadow:none;cursor:not-allowed}
+.btn-generate:hover:not(:disabled){background:var(--primary-hover);transform:translateY(-1px);box-shadow:0 6px 18px rgba(94,106,210,.36)}
+/* 已生成未变：次色（白底蓝字蓝边），与主色区分但可点。
+   #btn-generate 对调后挂的是 btn-generate-2 类，两个选择器都保留 */
+.btn-generate.view-mode,
+.btn-generate-2.view-mode{
+  background:#fff;color:var(--primary);
+  border:1.5px solid var(--primary);
+  box-shadow:0 2px 8px rgba(94,106,210,.12);
+}
+.btn-generate.view-mode:hover:not(:disabled),
+.btn-generate-2.view-mode:hover:not(:disabled){
+  background:var(--primary-soft);color:var(--primary);border-color:var(--primary);
+  transform:translateY(-1px);box-shadow:0 4px 12px rgba(94,106,210,.2);
+}
+.btn-generate:disabled{background:#e3e4e8;color:#a8adb7;box-shadow:none;border:none}
+.gen-hint{font-size:13px;color:var(--muted);min-height:20px}
+.gen-hint.warn{color:var(--amber)}
+.btn-wrap{position:relative}
+.tip{
+  position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%) translateY(4px);
+  background:#2b2f3a;color:#fff;font-size:12.5px;padding:7px 12px;border-radius:8px;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:.15s;z-index:60;
+}
+.tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#2b2f3a}
+.btn-wrap:hover .tip.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* header 入口按钮 */
+.cfg-trigger{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;
+  background:var(--primary-soft);color:var(--primary);border:1px solid #dfe3fb;
+}
+.cfg-trigger:hover{background:#e2e6fb}
+.cfg-trigger.open{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* ============ Drawer ============ */
+.drawer{
+  position:fixed;top:0;right:0;height:100vh;width:360px;background:var(--panel);z-index:45;
+  box-shadow:var(--shadow-lg);transform:translateX(100%);transition:transform .26s ease;
+  display:flex;flex-direction:column;
+}
+.drawer.open{transform:translateX(0)}
+.drawer-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex:none}
+.drawer-head h2{font-size:15.5px;font-weight:600}
+.drawer-head .x{color:var(--muted);font-size:18px;width:28px;height:28px;border-radius:6px}
+.drawer-head .x:hover{background:#f1f1f4;color:var(--text)}
+.drawer-body{flex:1;overflow-y:auto;padding:20px 22px 30px}
+.cfg-section{margin-bottom:30px}
+.cfg-section > .sec-title{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:1.5px;margin-bottom:12px;text-transform:uppercase}
+.dim-row{padding:12px 0;border-bottom:1px solid #f0f0f2}
+.dim-row:last-child{border-bottom:none}
+.dim-row.disabled{opacity:.45}
+.dim-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.dim-check{display:flex;align-items:center;gap:8px;flex:1;cursor:pointer;user-select:none}
+.dim-check input{width:15px;height:15px;accent-color:var(--primary);cursor:pointer}
+.dim-name{font-size:14px;font-weight:500}
+.dim-pct{font-size:13px;color:var(--primary);font-weight:600;min-width:42px;text-align:right}
+.dim-bottom{display:flex;align-items:center;gap:10px;padding-left:23px}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;flex:1;height:4px;border-radius:4px;
+  background:linear-gradient(to right,var(--primary) 0%,var(--primary) var(--fill,0%),#e4e5e9 var(--fill,0%),#e4e5e9 100%);
+  outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;
+  border:2px solid var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:pointer;
+}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid var(--primary);cursor:pointer}
+input[type=range]:disabled{cursor:not-allowed;background:#e9eaee;opacity:.8}
+input[type=range]:disabled::-webkit-slider-thumb{border-color:#b8bdc7;background:#f3f4f6}
+.score-input{
+  width:52px;padding:4px 6px;border:1px solid var(--border-strong);border-radius:6px;
+  font-size:12.5px;text-align:center;outline:none;
+}
+.score-input:focus{border-color:var(--primary)}
+.score-input:disabled{background:#f3f4f6;color:var(--muted);cursor:not-allowed}
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.preset-btn{
+  padding:9px 8px;border:1px solid var(--border-strong);border-radius:8px;font-size:13px;color:var(--text-2);
+  background:#fff;transition:.13s;position:relative;
+}
+.preset-btn:hover{border-color:var(--primary);color:var(--primary)}
+.preset-btn.active{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:500}
+.preset-scores{font-size:11px;color:var(--muted);margin-top:2px}
+.preset-btn.active .preset-scores{color:rgba(255,255,255,.75)}
+.cfg-note{font-size:12px;color:var(--muted);line-height:1.7;background:#f8f8fa;border-radius:8px;padding:10px 12px;margin-top:4px}
+
+/* ========== 上传区文本编辑 ========== */
+.lb-preview-wrap{position:relative;flex:1;min-height:0;display:flex;flex-direction:column}
+.lb-preview{
+  flex:1;background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 12px;
+  font-size:12.5px;color:var(--text-2);line-height:1.7;overflow-y:auto;white-space:pre-wrap;min-height:0;
+}
+.lb-preview.scrollable{overflow-y:auto}
+.lb-preview[contenteditable="true"]{
+  background:#fffdf7;border-color:var(--primary);outline:none;
+  box-shadow:0 0 0 3px rgba(94,106,210,.10);
+}
+.lb-preview.edited-text{background:#fffdf7;border-color:#f0d98c}
+.lb-edit-btn{
+  margin-left:auto;flex:none;
+  font-size:12px;padding:3px 10px;border-radius:6px;background:#fff;border:1px solid var(--border-strong);
+  color:var(--text-2);box-shadow:0 1px 2px rgba(0,0,0,.05);
+}
+.lb-edit-btn:hover{border-color:var(--primary);color:var(--primary)}
+.lb-edit-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.lb-edit-meta{font-size:11.5px;color:var(--muted);margin-top:6px}
+.paste-area .paste-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.paste-clip-btn{
+  font-size:12.5px;padding:4px 10px;border-radius:7px;border:1px solid var(--border-strong);
+  background:#fff;color:var(--text-2);
+}
+.paste-clip-btn:hover{border-color:var(--primary);color:var(--primary)}
+.card-sample-row{flex:none;display:flex;justify-content:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)}
+.card-sample-row .btn{padding:7px 14px;font-size:12.5px}
+/* ============ 编辑页（经历整理：勾选 / 删除 / 排序 / 合并，从 prototype 迁移） ============ */
+.sortable-ghost{opacity:.4!important;background:#eef0fc!important}
+.sortable-chosen{cursor:grabbing}
+.sortable-drag{opacity:1!important;box-shadow:var(--shadow-lg)!important;transform:rotate(0)!important}
+#view-edit .drag-main{flex:1;overflow-y:auto;padding:48px 40px 110px}
+.drag-wrap{max-width:780px;margin:0 auto}
+.edit-page-title{font-size:22px;font-weight:700;margin-bottom:18px;text-align:center}
+
+/* ===== "合并到一组" Tooltip ===== */
+.tf-tip{position:relative;display:inline-flex}
+.tf-tip-bubble{
+  position:absolute;
+  bottom:calc(100% + 10px);
+  right:0;
+  z-index:40;
+  width:max-content;
+  max-width:min(280px, calc(100vw - 32px));
+  padding:9px 12px;
+  border-radius:8px;
+  background:rgba(17,24,39,.95);
+  color:#fff;
+  font-size:12.5px;
+  font-weight:400;
+  line-height:1.7;
+  text-align:left;
+  box-shadow:0 8px 24px rgba(16,24,40,.20);
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(4px);
+  transition:opacity .18s ease,transform .18s ease,visibility .18s;
+  pointer-events:none;
+}
+.tf-tip-bubble::after{   /* 小箭头（指向按钮） */
+  content:'';
+  position:absolute;
+  top:100%;
+  right:26px;
+  width:9px;height:9px;
+  background:rgba(17,24,39,.95);
+  transform:translateY(-5px) rotate(45deg);
+  border-bottom-right-radius:2px;
+}
+.tf-tip-title{display:block;font-weight:600;margin-bottom:1px}
+.tf-tip-line{display:block;white-space:nowrap}
+.tf-tip:hover .tf-tip-bubble,
+.tf-tip:focus-within .tf-tip-bubble{
+  opacity:1;
+  visibility:visible;
+  transform:translateY(0);
+}
+.edit-toolbar{
+  max-width:780px;margin:0 auto 14px;display:flex;align-items:center;gap:14px;
+}
+.ec-selectall,.ec-check{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-2);cursor:pointer;user-select:none;flex:none}
+.ec-selectall input,.ec-check input{width:15px;height:15px;accent-color:var(--primary);cursor:pointer}
+.ec-count{font-size:12.5px;color:var(--muted)}
+#btn-merge-group:disabled{opacity:.5;cursor:not-allowed}
+.drag-card{
+  background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px 14px 12px;
+  margin-bottom:10px;display:flex;gap:10px;box-shadow:var(--shadow);
+  transition:border-color .15s,box-shadow .15s,opacity .15s,background .15s;position:relative;
+}
+.drag-card:hover{border-color:var(--primary)}
+.drag-card.dragging{opacity:.4}
+.drag-card.leader{padding-left:10px}
+.drag-card.unchecked{opacity:.5;background:#fafafa}
+.drag-grip{color:var(--muted-2);cursor:grab;display:flex;align-items:center;font-size:17px;letter-spacing:-2px;flex:none;padding:0 2px}
+.drag-body{flex:1;min-width:0}
+.drag-card-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.drag-title{font-size:14.5px;font-weight:600}
+.drag-score{font-size:12px;color:var(--muted)}
+.drag-role{font-size:12.5px;color:var(--text-2);margin:4px 0 2px}
+.drag-actions{font-size:12px;color:var(--muted);line-height:1.6}
+.drag-del{color:var(--muted-2);font-size:15px;width:28px;height:28px;border-radius:7px;flex:none}
+.drag-del:hover{background:#fdeaea;color:var(--red)}
+/* 合并组标记 / 拖拽合并落点 */
+.ec-gbadge{font-size:11px;color:var(--primary);background:var(--primary-soft);border:1px solid #dfe3fb;padding:1px 8px;border-radius:20px;white-space:nowrap}
+.drag-card.leader.drop-target{
+  border-color:var(--primary);background:var(--primary-soft);
+  box-shadow:0 0 0 3px rgba(94,106,210,.15);
+}
+.drag-card.leader.drop-target::after{
+  content:'松开即可合并到该经历';position:absolute;top:-11px;right:14px;z-index:5;
+  background:var(--primary);color:#fff;font-size:11px;padding:2px 10px;border-radius:20px;white-space:nowrap;
+}
+/* 组成员卡（嵌在 leader 卡内，不可拖，只能移出） */
+.ec-members{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);display:flex;flex-direction:column;gap:8px}
+.drag-card.member{background:#f8f9fc;border-style:dashed;margin-bottom:0;padding:10px 12px}
+.drag-card.member:hover{border-color:var(--border-strong)}
+.drag-card.member .drag-role{margin-top:3px}
+.ec-out{
+  font-size:11.5px;color:var(--muted);border:1px solid var(--border);border-radius:6px;
+  padding:3px 9px;height:fit-content;align-self:center;flex:none;background:#fff;white-space:nowrap;
+}
+.ec-out:hover{border-color:var(--primary);color:var(--primary)}
+.ec-ungroup{margin-top:9px;font-size:12px;color:var(--primary);background:#fff;border:1px solid #dfe3fb;border-radius:7px;padding:5px 12px;width:fit-content}
+.ec-ungroup:hover{background:var(--primary-soft)}
+.deleted-zone{margin-top:26px;border:1.5px dashed var(--border-strong);border-radius:12px;padding:16px 18px;min-height:90px}
+.deleted-zone h4{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.deleted-zone .drag-card{background:#fafafa;opacity:.85;margin-bottom:8px}
+#edit-trash{display:flex;flex-direction:column;gap:0}
+.drag-restore{color:var(--primary);font-size:12px;padding:4px 10px;border:1px solid #dfe3fb;border-radius:7px;flex:none;align-self:center;white-space:nowrap}
+.drag-restore:hover{background:var(--primary-soft)}
+.drag-footer{
+  position:sticky;bottom:0;background:rgba(250,250,252,.92);backdrop-filter:blur(6px);
+  border-top:1px solid var(--border);padding:14px 40px;display:flex;justify-content:flex-end;align-items:center;gap:12px;flex:none;
+}
+#edit-foot-hint{flex:1;font-size:12.5px;color:var(--muted)}
+
+/* ===== 中栏编辑态 ===== */
+.col-slim.editing{outline:2px dashed #5e6ad2;outline-offset:-2px}
+.col-slim .col-btn.edit-complete{background:var(--green-soft);color:var(--green);border-color:#c6ebd4}
+.col-slim .col-btn.edit-complete:hover{background:#dbf3e2}
+.editing .sentence{outline:1px dashed transparent;cursor:text}
+.editing .sentence:hover::after,.editing .sentence:focus::after{opacity:0}
+.editing .sentence.edited:hover::after{opacity:1}
+.editing .sentence:hover,.editing .sentence:focus{outline-color:var(--primary);background:#fff}
+.sentence.edited::before{background:var(--green)}
+.sentence.edited::after{
+  content:"user_edited";
+  background:var(--green-soft);color:var(--green);opacity:1;
+}
+
+/* ===== 每卡片的"↻ 还原"按钮 ===== */
+.btn-revert-one{
+  margin-left:auto;
+  font-size:11.5px;
+  font-weight:500;
+  padding:3px 10px;
+  border-radius:6px;
+  background:#fff;
+  color:var(--muted);
+  border:1px solid var(--border);
+  cursor:pointer;
+  transition:.15s;
+  white-space:nowrap;
+}
+.btn-revert-one:hover{
+  color:var(--primary);
+  border-color:var(--primary);
+  background:var(--primary-soft);
+}
+/* 非编辑态时隐藏"↻ 还原"按钮（因为 renderSlim 是通用的，
+   退出编辑态时若该按钮还在会干扰） */
+#col-slim:not(.editing) .btn-revert-one{
+  display:none;
+}
+/* 编辑态时显示 */
+#col-slim.editing .btn-revert-one{
+  display:inline-flex;
+}
+
+/* ===== 确认框（复用一套） ===== */
+.tf-modal-mask{
+  position:fixed;inset:0;background:rgba(16,24,40,.32);
+  z-index:300;display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(2px);
+}
+.tf-modal-mask.show{display:flex}
+.tf-modal{
+  background:#fff;border-radius:14px;box-shadow:var(--shadow-lg);
+  padding:26px 28px 20px;max-width:400px;width:90%;
+  animation:tfModalIn .18s ease-out;
+}
+@keyframes tfModalIn{
+  from{opacity:0;transform:translateY(-8px) scale(.98)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.tf-modal h3{font-size:15px;font-weight:600;margin-bottom:10px;color:var(--text)}
+.tf-modal p{font-size:13.5px;color:var(--text-2);line-height:1.7;margin-bottom:22px}
+.tf-modal-actions{display:flex;justify-content:flex-end;gap:10px}
+.tf-modal-actions button{
+  padding:8px 18px;border-radius:8px;font-size:13.5px;font-weight:500;transition:.15s;
+}
+.tf-modal-btn-cancel{
+  background:#fff;color:var(--text-2);border:1px solid var(--border-strong);
+}
+.tf-modal-btn-cancel:hover{background:#f4f4f6;border-color:#c8ccd4}
+.tf-modal-btn-confirm{
+  background:var(--primary);color:#fff;border:1px solid var(--primary);
+}
+.tf-modal-btn-confirm:hover{background:var(--primary-hover);border-color:var(--primary-hover)}
+.dz-sub-note{
+  font-size:11.5px;
+  color:var(--muted-2);
+}
+</style>
+</head>
+<body>
+
+<!-- ================= 屏1：首页 ================= -->
+<div id="view-home" class="view-page active">
+  <header class="app-header">
+    <div class="logo"><span class="mark">TrueFit</span><span>简旨</span><span class="sub">简历智能瘦身 · Live 数据版</span></div>
+    <button class="cfg-trigger" id="cfg-trigger"><span>⚙</span>进入瘦身配置</button>
+  </header>
+
+  <div class="home-main">
+    <div class="home-hero">
+      <h1>按目标岗位，给简历瘦身</h1>
+      <p>上传完整简历、目标 JD，调整配置，完成简历瘦身。</p>
+    </div>
+
+    <div class="upload-row">
+      <!-- Resume -->
+      <section class="upload-card" id="card-resume">
+        <div class="upload-card-head">
+          <h3>📄 简历 Resume <span class="tag" id="resume-tag">未上传</span></h3>
+          <div class="tabs" data-panel="resume">
+            <button data-mode="file" class="active">上传文件</button>
+            <button data-mode="paste">粘贴文本</button>
+          </div>
+        </div>
+        <div class="dropzone" id="resume-drop">
+          <div class="dz-icon">📎</div>
+          <div class="dz-main">点击选择文件，或将文件拖到此处</div>
+          <div class="dz-sub">支持 PDF （文字版）/ Word (.docx) / Markdown / TXT</div>
+          
+          <input type="file" class="hidden" id="resume-file" accept=".txt,.md,.markdown,.docx,.pdf">
+        </div>
+        <div class="paste-area hidden">
+          <div class="paste-toolbar">
+            <span style="font-size:12.5px;color:var(--muted)">将简历全文粘贴到下方，或一键读取剪切板：</span>
+            <button class="paste-clip-btn" data-clip="resume">📋 粘贴剪切板</button>
+          </div>
+          <textarea id="resume-text" placeholder="将简历全文粘贴到这里…"></textarea>
+        </div>
+        <div class="loaded-box hidden" id="resume-loaded">
+          <div class="lb-top">
+            <div class="lb-icon">📄</div>
+            <div>
+              <div class="lb-name" id="resume-lb-name"></div>
+              <div class="lb-meta" id="resume-lb-meta"></div>
+            </div>
+            <button class="lb-edit-btn" data-edit="resume">✎ 编辑</button>
+          </div>
+          <div class="lb-preview-wrap">
+            <div class="lb-preview scrollable" id="resume-lb-preview"></div>
+            <div class="lb-edit-meta" id="resume-edit-meta"></div>
+          </div>
+          <div class="lb-actions">
+            <button class="text-link" id="resume-repick">重新选择</button>
+            <button class="text-link" id="resume-clear" style="color:var(--muted)">清空</button>
+          </div>
+        </div>
+        <div class="card-sample-row"><button class="btn btn-secondary" id="resume-sample">📄 载入示例简历</button></div>
+      </section>
+
+      <!-- JD -->
+      <section class="upload-card" id="card-jd">
+        <div class="upload-card-head">
+          <h3>🎯 岗位 JD <span class="tag" id="jd-tag">未上传</span></h3>
+          <div class="tabs" data-panel="jd">
+            <button data-mode="file" class="active">上传文件</button>
+            <button data-mode="paste">粘贴文本</button>
+          </div>
+        </div>
+        <div class="dropzone" id="jd-drop">
+          <div class="dz-icon">📎</div>
+          <div class="dz-main">点击选择文件，或将文件拖到此处</div>
+          <div class="dz-sub">支持 PDF （文字版）/ Word (.docx) / Markdown / TXT</div>
+          <input type="file" class="hidden" id="jd-file" accept=".txt,.md,.markdown,.docx,.pdf">
+        </div>
+        <div class="paste-area hidden">
+          <div class="paste-toolbar">
+            <span style="font-size:12.5px;color:var(--muted)">将 JD 全文粘贴到下方，或一键读取剪切板：</span>
+            <button class="paste-clip-btn" data-clip="jd">📋 粘贴剪切板</button>
+          </div>
+          <textarea id="jd-text" placeholder="将 JD 全文粘贴到这里…"></textarea>
+        </div>
+        <div class="loaded-box hidden" id="jd-loaded">
+          <div class="lb-top">
+            <div class="lb-icon">🎯</div>
+            <div>
+              <div class="lb-name" id="jd-lb-name"></div>
+              <div class="lb-meta" id="jd-lb-meta"></div>
+            </div>
+            <button class="lb-edit-btn" data-edit="jd">✎ 编辑</button>
+          </div>
+          <div class="lb-preview-wrap">
+            <div class="lb-preview scrollable" id="jd-lb-preview"></div>
+            <div class="lb-edit-meta" id="jd-edit-meta"></div>
+          </div>
+          <div class="lb-actions">
+            <button class="text-link" id="jd-repick">重新选择</button>
+            <button class="text-link" id="jd-clear" style="color:var(--muted)">清空</button>
+          </div>
+        </div>
+        <div class="card-sample-row"><button class="btn btn-secondary" id="jd-sample">🎯 载入示例 JD</button></div>
+      </section>
+    </div>
+
+    <div class="generate-area">
+      <div class="gen-btns">
+        <div class="btn-wrap">
+          <span class="tip" id="manual-tip"></span>
+          <button class="btn-generate" id="btn-generate-manual" disabled>自己给简历瘦身</button>
+        </div>
+        <div class="btn-wrap" id="gen-wrap">
+          <span class="tip" id="gen-tip"></span>
+          <button class="btn-generate-2" id="btn-generate" disabled>
+            <span class="btn-main-text">一键生成瘦身简历</span>
+            <span class="btn-sub-text">(自动聚类功能开发中)</span>
+          </button>
+        </div>
+      </div>
+      <div class="gen-hint" id="gen-hint">请先上传完整的 Resume 和 JD</div>
+    </div>
+  </div>
+
+  <!-- ================= 配置抽屉 ================= -->
+  <aside class="drawer" id="drawer">
+    <div class="drawer-head">
+      <h2>瘦身配置</h2>
+      <button class="x" id="drawer-close">✕</button>
+    </div>
+    <div class="drawer-body">
+      <!-- 维度勾选 -->
+      <section class="cfg-section">
+        <div class="sec-title">打分维度</div>
+        <div id="dim-list"></div>
+      </section>
+
+      <!-- 预设系列 -->
+      <section class="cfg-section">
+        <div class="sec-title">预设系列</div>
+        <div class="preset-grid" id="preset-grid">
+          <button class="preset-btn" data-preset="auto">系统自动判断<div class="preset-scores">按 JD 智能匹配</div></button>
+          <button class="preset-btn" data-preset="general">通用<div class="preset-scores">20 / 45 / 15 / 10</div></button>
+          <button class="preset-btn" data-preset="tech">技术<div class="preset-scores">30 / 30 / 10 / 30</div></button>
+          <button class="preset-btn" data-preset="manage">管理<div class="preset-scores">20 / 35 / 10 / 35</div></button>
+          <button class="preset-btn" data-preset="campus">校招<div class="preset-scores">30 / 30 / 5 / 5</div></button>
+          <button class="preset-btn" data-preset="custom">用户自定义<div class="preset-scores">自由调整分数</div></button>
+        </div>
+      </section>
+
+      <div style="position:sticky;bottom:0;background:linear-gradient(rgba(255,255,255,0),#fff 40%);padding:14px 0 2px;margin:0 -22px -30px">
+        <button class="btn btn-primary" id="btn-gen-drawer" style="width:100%;padding:12px" disabled>生成瘦身简历</button>
+        <div id="drawer-gen-hint" style="font-size:12px;color:var(--muted);text-align:center;margin-top:8px;min-height:18px"></div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- ============ 结果页 ============ -->
+<div id="view-result" class="view-page">
+  <header class="app-header">
+    <div class="logo"><span class="mark">TrueFit</span><span>简旨</span><span class="sub">Live 数据版</span></div>
+    <div style="display:flex;align-items:center;gap:18px">
+      <button class="text-link" id="back-home-1" type="button">← 返回首页</button>
+      <span class="text-link" id="data-source">数据来源：加载中…</span>
+    </div>
+  </header>
+  <div class="match-banner" id="match-banner">正在加载数据…</div>
+
+  <div class="cols">
+    <div class="cols-top">
+      <!-- 左：原文 -->
+      <div class="col col-original" id="col-original">
+        <div class="col-head">
+          <div><h2>📄 简历原文</h2><div class="desc">只读・来自 source_store，用于对照溯源</div></div>
+        </div>
+        <div class="col-body" id="original-body"></div>
+      </div>
+
+      <!-- 中：瘦身简历 -->
+      <div class="col col-slim" id="col-slim">
+        <div class="col-head">
+            <div><h2>👁️ 瘦身简历</h2><div class="desc">来自 changes_A_live.json ｜ 悬停可溯源</div></div>
+            <div style="display:flex;gap:8px;align-items:center;position:relative">
+                <button class="col-btn" id="btn-back-edit" type="button" style="display:none;background:#fff;color:var(--text-2);border-color:var(--border-strong)">← 返回整理</button>
+                <button class="col-btn" id="btn-edit" type="button">✎ 进一步编辑</button>
+                <div style="position:relative">
+                <button class="col-btn" id="export-btn" style="background:#fff;color:var(--text-2);border-color:var(--border-strong)">⬇ 导出</button>
+                <div id="export-menu" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-lg);padding:6px;min-width:156px;white-space:nowrap;z-index:10">
+                    <button data-export="md" style="display:block;width:100%;text-align:left;padding:7px 12px;font-size:13px;border-radius:6px;color:var(--text-2);background:none;border:none;cursor:pointer">导出为 Markdown</button>
+                    <button data-export="txt" style="display:block;width:100%;text-align:left;padding:7px 12px;font-size:13px;border-radius:6px;color:var(--text-2);background:none;border:none;cursor:pointer">导出为 纯文本</button>
+                    <button data-export="clip" style="display:block;width:100%;text-align:left;padding:7px 12px;font-size:13px;border-radius:6px;color:var(--text-2);background:none;border:none;cursor:pointer">复制到 剪切板</button>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-body" id="slim-body"></div>
+      </div>
+    </div>
+
+    <!-- 底部匹配报告 -->
+    <div class="report-wrap">
+      <div class="report-summary">
+        <div class="rs-score" id="rs-score">— <small>/ 100</small></div>
+        <div class="rs-verdict" id="rs-verdict">加载中…</div>
+        <button class="btn-toggle-report" id="btn-toggle-report">查看完整匹配报告</button>
+      </div>
+      <div class="report-detail collapsed" id="report-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 屏3：编辑页（经历整理） ================= -->
+<div class="view-page" id="view-edit">
+  <header class="app-header">
+    <div class="logo"><span class="mark">TrueFit</span><span>简旨</span><span class="sub">整理我的经历</span></div>
+    <button class="text-link" id="edit-back">← 返回首页</button>
+  </header>
+
+  <div class="drag-main">
+    <div class="drag-wrap">
+      <div class="edit-page-title">整理我的经历</div>
+    </div>
+
+    <div class="edit-toolbar">
+      <label class="ec-selectall"><input type="checkbox" id="ec-all"> 全选</label>
+      <span class="ec-count" id="ec-count"></span>
+      <span style="flex:1"></span>
+      <span class="tf-tip">
+        <button class="btn btn-secondary" id="btn-merge-group" disabled>🔗 合并到一组</button>
+        <span class="tf-tip-bubble" role="tooltip">
+          <span class="tf-tip-title">操作说明：</span>
+          <span class="tf-tip-line">1. 勾选后点击此按钮合并</span>
+          <span class="tf-tip-line">2. 也可直接拖拽卡片到另一张卡片上合并</span>
+        </span>
+      </span>
+    </div>
+
+    <div class="drag-wrap">
+      <div id="edit-list"></div>
+    </div>
+  </div>
+
+  <div class="drag-footer">
+    <span id="edit-foot-hint">点「整理完成」，瘦身简历将按你的勾选、顺序与分组重新生成。</span>
+    <button class="btn btn-secondary" id="edit-cancel">返回</button>
+    <button class="btn btn-primary" id="edit-done">✓ 整理完成</button>
+  </div>
+</div>
+
+<div class="loading-mask" id="loading">
+  <div class="spinner"></div>
+  <div class="lm-txt" id="loading-txt">正在从 server.py 拉取真数据…</div>
+</div>
+
+<div class="tf-modal-mask" id="revert-modal">
+  <div class="tf-modal">
+    <h3>还原该经历</h3>
+    <p>将清空这段经历内的所有文字修改，恢复为 AI 原始处理。此操作不可撤销。</p>
+    <div class="tf-modal-actions">
+      <button class="tf-modal-btn-cancel" id="revert-cancel">取消</button>
+      <button class="tf-modal-btn-confirm" id="revert-confirm">确认还原</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   TrueFit Live 数据版
+   启动时 fetch /api/bundle/A/JD1_backend，把后端产物
+   映射成原型所需的 SRC / EXPS / BLOCKS，然后渲染。
+   ========================================================= */
+
+const API = 'http://localhost:8000';
+const RESUME_ID = 'A';
+const JD_ID = 'JD1_backend';
+
+// 运行时填充
+let SRC = {};      // {W1: "...", P1: "..."}
+let EXPS = {};     // {G1: {title,time,tier,role,score,cardActions,memberIds}}
+let BLOCKS = {};   // {G1: [{id,op,src,text}, ...]}
+let RAW = null;    // 原始 bundle，备用
+
+const OP_LABEL = {verbatim:'保留原文',compress:'压缩',reword:'改写',merge:'合并',reorder:'前置',demote:'降级',omit:'省略'};
+const TIER_LABEL = {core:'核心内容',related:'相关内容',other:'其他内容'};
+
+/* ---------- 导出 ---------- */
+(function bindExport(){
+  const btn = document.getElementById('export-btn');
+  const menu = document.getElementById('export-menu');
+  if(!btn || !menu) return;
+
+  btn.addEventListener('click', e=>{
+    e.stopPropagation();
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  });
+  document.addEventListener('click', ()=> menu.style.display = 'none');
+  menu.addEventListener('click', e=>e.stopPropagation());
+
+  menu.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      const fmt = b.dataset.export;
+      const content = buildExportContent(fmt);
+
+      if(fmt === 'clip'){
+        try{
+          await navigator.clipboard.writeText(content);
+
+          // ★ 体验优化：按钮临时变"✅ 已复制"，1.5 秒后恢复
+          const origText = b.textContent;
+          const origColor = b.style.color;
+          b.textContent = '✅ 已复制';
+          b.style.color = '#16a34a';
+          setTimeout(()=>{
+            b.textContent = origText;
+            b.style.color = origColor;
+          }, 1500);
+
+          showToast('✅ 已复制到剪切板，可直接粘贴到招聘网站');
+        }catch(e){
+          showToast('⚠️ 剪切板不可用，已改为下载文件');
+          downloadFile(content, '瘦身简历.txt');
+        }
+      }else{
+        downloadFile(content, fmt === 'md' ? '瘦身简历.md' : '瘦身简历.txt');
+        showToast(fmt === 'md' ? '✅ 已下载 瘦身简历.md' : '✅ 已下载 瘦身简历.txt');
+      }
+      menu.style.display = 'none';
+    });
+  });
+})();
+
+
+function buildExportContent(fmt){
+  const lines = [];
+  ['core','related','other'].forEach(tier=>{
+    const gids = Object.keys(EXPS).filter(g => EXPS[g].tier === tier);
+    if(gids.length === 0) return;
+
+    // clip 格式：中文方括号 + 段落无符号
+    // md / txt 格式：沿用之前
+    if(fmt === 'md'){
+      lines.push(`## ${TIER_LABEL[tier]}`, '');
+    }else if(fmt === 'clip'){
+      lines.push(`【${TIER_LABEL[tier]}】`);
+    }else{
+      lines.push(`【${TIER_LABEL[tier]}】`);
+    }
+
+    gids.forEach(gid=>{
+      const e = EXPS[gid];
+      if(fmt === 'md'){
+        lines.push(`### ${e.title}（${e.time}）`, '');
+      }else{
+        // clip / txt 都一样：标题 + 时间
+        lines.push(`${e.title}（${e.time}）`);
+      }
+      (BLOCKS[gid] || []).forEach(b=>{
+        if(fmt === 'md') lines.push(`- ${b.text}`);
+        else if(fmt === 'clip') lines.push(b.text);   // 段落直出，无前缀
+        else lines.push(`  · ${b.text}`);             // txt 保留点号
+      });
+      lines.push('');
+    });
+  });
+  return lines.join('\n');
+}
+
+function showToast(msg){
+  let t = document.getElementById('toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = `
+      position:fixed;top:80px;left:50%;transform:translateX(-50%);
+      background:#2b2f3a;color:#fff;padding:10px 18px;border-radius:8px;
+      font-size:13px;z-index:200;opacity:0;transition:.2s;
+      pointer-events:none;
+    `;
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>{ t.style.opacity = '0'; }, 2200);
+}
+
+function downloadFile(content, filename){
+  const blob = new Blob([content], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ---------- 启动 ---------- */
+async function boot(){
+  document.getElementById('loading').classList.add('show');
+  try{
+    // 并行拉 bundle + scored
+    const [bundleRes, scoredRes] = await Promise.all([
+      fetch(`${API}/api/bundle/${RESUME_ID}/${JD_ID}`),
+      fetch(`${API}/api/scored/${RESUME_ID}/${JD_ID}`).catch(()=>({ok:false}))
+    ]);
+    if(!bundleRes.ok) throw new Error('bundle 返回 ' + bundleRes.status);
+    const bundle = await bundleRes.json();
+
+    let scored = null;
+    if(scoredRes.ok){
+      scored = await scoredRes.json();
+    }
+    RAW = bundle;
+    buildModels(bundle, scored);
+    renderAll(bundle);
+    document.getElementById('loading').classList.remove('show');
+  }catch(e){
+  document.getElementById('loading').classList.remove('show');
+  console.error('[boot] 加载失败:', e);
+  // 不抛出，让调用方用 EXPS 判空
+  }
+}
+
+/* ---------- 数据建模：把后端产物映射成原型结构 ---------- */
+function buildModels(bundle, scored){
+  // 1. SRC：直接就是 source_store
+  SRC = bundle.resume.source_store || {};
+
+  // 2. 建一个 exp_id → row 的映射（真分数在里面）
+  const scoreById = {};
+  if(scored && scored.rows){
+    scored.rows.forEach(r => { scoreById[r.id] = r; });
+  }
+
+  // 3. EXPS + BLOCKS：用 clusters 分组，用 changes 归位
+  const exps = bundle.resume.experiences || [];
+  const clusters = (bundle.clusters && bundle.clusters.clusters) || [];
+  const changes = (bundle.changes && bundle.changes.changes) || [];
+
+  const expById = {};
+  exps.forEach(e => expById[e.id] = e);
+
+  const changesByGroup = {};
+  changes.forEach(c => {
+    const g = c.group_id;
+    if(!changesByGroup[g]) changesByGroup[g] = [];
+    changesByGroup[g].push(c);
+  });
+
+  EXPS = {};
+  BLOCKS = {};
+
+  clusters.forEach(g => {
+    const memberIds = g.member_ids || [];
+    const first = expById[memberIds[0]] || {};
+    const title = g.group_title || first.title || '(未命名)';
+    const time = first.time || '';
+    const tierCn = g.tier || 'other';   // "core" / "related" / "other"
+
+    // 卡片分数 = 组内成员的 tier.final 的最高分
+    let groupScore = 0;
+    memberIds.forEach(mid => {
+      const r = scoreById[mid];
+      if(r && r.tier && typeof r.tier.final === 'number'){
+        if(r.tier.final > groupScore) groupScore = r.tier.final;
+      }
+    });
+    // 兜底：scored 没返回时按 tier 猜
+    if(!groupScore){
+      groupScore = tierCn === 'core' ? 8 : (tierCn === 'related' ? 5 : 3);
+    }
+
+    // cardActions：从每个成员的 actions 取第一条，拼起来
+    const cardActions = [];
+    memberIds.forEach(mid => {
+      const e = expById[mid];
+      if(e && e.actions && e.actions.length) cardActions.push(e.actions[0]);
+    });
+
+    EXPS[g.group_id] = {
+      title,
+      time,
+      tier: tierCn,
+      role: first.role || '',
+      score: Math.round(groupScore * 100) / 100,  // 保留 2 位小数
+      cardActions,
+      memberIds
+    };
+
+    BLOCKS[g.group_id] = changesByGroup[g.group_id] || [];
+  });
+}
+
+/* ---------- 渲染全部 ---------- */
+function renderAll(bundle){
+  renderMatchBanner(bundle);
+  renderOriginal(bundle);
+  renderSlim();
+  renderReport(bundle);
+  document.getElementById('data-source').textContent =
+    `数据来源：changes_${RESUME_ID}_live.json ｜ report_${RESUME_ID}_live.md`;
+}
+
+/* ---------- 顶部提示行 ---------- */
+function renderMatchBanner(bundle){
+  const jd = bundle.jd || {};
+  const req = jd.requirements || {};
+  let jobName = '目标岗位';
+  if(req.basic_info && req.basic_info.title) jobName = req.basic_info.title;
+  else if(req.title) jobName = req.title;
+  else if(jd.jd_id) jobName = jd.jd_id;
+  document.getElementById('match-banner').innerHTML =
+    `当前匹配：<b>${escapeHtml(jobName)}</b>｜改写原则：保留全部事实，不虚构经历`;
+}
+
+/* ---------- 左栏：原文（按 source_store 键顺序渲染）---------- */
+function renderOriginal(bundle){
+  const body = document.getElementById('original-body');
+  const store = bundle.resume.source_store || {};
+  const basic = bundle.resume.basic_info || {};
+  const intent = bundle.resume.intent || {};
+
+  let html = '';
+  html += `<div class="res-name">${escapeHtml(basic.name || '')}</div>`;
+  html += `<div class="res-sub">${escapeHtml([basic.gender, basic.age?basic.age+'岁':'', basic.city,
+    basic.degree, basic.work_years?basic.work_years+'年经验':''].filter(Boolean).join(' · '))}</div>`;
+  if(intent.target_position){
+    html += `<div class="res-sub" style="margin-bottom:16px">求职意向：${escapeHtml(intent.target_position)}${intent.expected_city?'（'+escapeHtml(intent.expected_city)+'）':''}</div>`;
+  }
+
+  const skills = (bundle.resume.skills_declared || {}).hard || [];
+  if(skills.length){
+    html += `<div class="res-sec"><div class="res-sec-title">技能清单</div>
+      <div class="skill-line"><b>硬技能：</b>${skills.map(escapeHtml).join('、')}</div></div>`;
+  }
+
+  // 按 W / P 分组渲染
+  const groups = {W: [], P: []};
+  Object.keys(store).forEach(k=>{
+    const prefix = k[0];
+    if(groups[prefix]) groups[prefix].push(k);
+  });
+  Object.keys(groups).forEach(p=>{
+    groups[p].sort((a,b)=>(parseInt(a.slice(1))||0) - (parseInt(b.slice(1))||0));
+  });
+
+  const labels = {W:'工作经历', P:'项目经历'};
+  ['W','P'].forEach(prefix=>{
+    if(!groups[prefix].length) return;
+    html += `<div class="res-sec"><div class="res-sec-title">${labels[prefix]}</div>`;
+    groups[prefix].forEach(k=>{
+      html += `<span class="src" data-id="${k}">${escapeHtml(store[k])}</span>`;
+    });
+    html += `</div>`;
+  });
+
+  body.innerHTML = html;
+}
+
+/* ---------- 中栏：瘦身简历 ---------- */
+function renderSlim(){
+  const body = document.getElementById('slim-body');
+  let html = '';
+
+  // 单张 exp-block 的渲染函数（两分支共用）
+  function renderExpBlock(gid, tier){
+    const e = EXPS[gid];
+    if(!e) return '';
+    const blocks = BLOCKS[gid] || [];
+    const sc = (tier === 'other')
+      ? {bg:'#f1f1f4',fg:'#6b7280',bd:'#e3e5ea'}
+      : scoreColor(e.score);
+
+    // 该卡片内被编辑过的 output_id 数量（>0 时显示"↻ 还原"）
+    const editedCount = blocks.map(b => b.output_id).filter(id => state.edits[id]).length;
+
+    let h = `<div class="exp-block" data-exp="${gid}">
+      <div class="exp-title">${escapeHtml(e.title)}
+        <span class="tier-chip ${tier}">${TIER_LABEL[tier]}</span>
+        <span class="score-badge" style="background:${sc.bg};color:${sc.fg};border-color:${sc.bd}">相关分 ${e.score}</span>
+        ${editedCount > 0 ? `<button class="btn-revert-one" data-revert-gid="${gid}" type="button">↻ 还原</button>` : ''}
+      </div>
+      <div class="exp-meta">${escapeHtml(e.time)}</div>`;
+
+    if(blocks.length === 0){
+      h += `<div class="sentence" style="color:var(--muted);cursor:default">（该组暂无 changes 数据）</div>`;
+    }else{
+      blocks.forEach(b=>{
+        const bid = b.output_id;
+        const edited = !!state.edits[bid];
+        const text = edited ? state.edits[bid] : b.text;
+        const editedCls = edited ? ' edited' : '';
+        let srcAttrs = '';
+        if(!edited){
+          const srcIds = (b.source_ids || []).join(' ');
+          srcAttrs = `data-src="${srcIds}" data-op-label="${OP_LABEL[b.operation] || b.operation}"`;
+        }
+        h += `<div class="sentence${editedCls}" data-bid="${bid}" ${srcAttrs} contenteditable="false">${escapeHtml(text)}</div>`;
+      });
+    }
+    h += '</div>';
+    return h;
+  }
+
+  if(state.cameFromEdit){
+    // 用户排序模式：单列，按 state.order 顺序，无 tier 大标题（卡片仍带自己的 tier 小标签）
+    const ordered = (state.order || []).filter(gid => EXPS[gid]);
+    ordered.forEach(gid => {
+      html += renderExpBlock(gid, EXPS[gid].tier);
+    });
+  }else{
+    // 系统模式：按 tier 分三层（核心内容 / 相关内容 / 其他内容）
+    ['core','related','other'].forEach(tier=>{
+      const groupIds = Object.keys(EXPS).filter(gid => EXPS[gid].tier === tier);
+      if(groupIds.length === 0) return;
+
+      html += `<div class="tier-header tier-${tier}">
+        <span class="t-name">${TIER_LABEL[tier]}</span>
+        <span class="t-count">${groupIds.length} 组</span></div>`;
+
+      groupIds.forEach(gid=>{
+        html += renderExpBlock(gid, tier);
+      });
+    });
+  }
+
+  body.innerHTML = html;
+  body.classList.remove('editing');
+  bindHoverEvents();
+}
+
+// 中栏"✎ 进一步编辑"行内改字
+(function bindInlineEdit(){
+  const btnEdit = document.getElementById('btn-edit');
+  const colSlim = document.getElementById('col-slim');
+  if(!btnEdit || !colSlim) return;
+
+  // 找 bid 的原文（用于判断用户是否真改了）
+  function findOriginalText(bid){
+    for(const gid of Object.keys(BLOCKS)){
+      for(const b of BLOCKS[gid]){
+        if(b.output_id === bid) return b.text;
+      }
+    }
+    return null;
+  }
+
+  btnEdit.addEventListener('click', () => {
+    state.editing = !state.editing;
+
+    if(state.editing){
+      // 进入编辑态
+      colSlim.classList.add('editing');
+      btnEdit.textContent = '✓ 编辑完成';
+      btnEdit.classList.add('edit-complete');
+      colSlim.querySelectorAll('.sentence').forEach(el => {
+        el.setAttribute('contenteditable', 'true');
+      });
+      showToast('已进入编辑模式，点击句子即可改字');
+    }else{
+      // 退出编辑态，保存改动
+      colSlim.classList.remove('editing');
+      btnEdit.textContent = '✎ 进一步编辑';
+      btnEdit.classList.remove('edit-complete');
+      colSlim.querySelectorAll('.sentence').forEach(el => {
+        el.setAttribute('contenteditable', 'false');
+        const bid = el.dataset.bid;
+        if(!bid) return;
+        const newText = el.textContent;
+        const orig = findOriginalText(bid);
+        if(orig !== null && newText !== orig){
+          // 用户改过这句话 → 记录 + 标记 edited + 脱离溯源
+          state.edits[bid] = newText;
+          el.classList.add('edited');
+          el.removeAttribute('data-src');
+          el.removeAttribute('data-op-label');
+        }else if(orig !== null && newText === orig){
+          // 用户改回原样 → 清掉 edited 状态
+          delete state.edits[bid];
+          el.classList.remove('edited');
+          // 重新加回 data-src / data-op-label
+          for(const gid of Object.keys(BLOCKS)){
+            const b = BLOCKS[gid].find(x => x.output_id === bid);
+            if(b){
+              const srcIds = (b.source_ids || []).join(' ');
+              el.setAttribute('data-src', srcIds);
+              el.setAttribute('data-op-label', OP_LABEL[b.operation] || b.operation);
+              break;
+            }
+          }
+        }
+      });
+      saveHomeState();
+      // 重渲染：让含改动的卡片标题行生成"↻ 还原"按钮（renderSlim 依据 state.edits 渲染）
+      renderSlim();
+      showToast('✅ 已保存修改');
+    }
+  });
+})();
+
+// 每张经历卡片的"↻ 还原"：只清空该卡片（gid）内的文字改动
+(function bindRevertOne(){
+  const modal = document.getElementById('revert-modal');
+  const btnCancel = document.getElementById('revert-cancel');
+  const btnConfirm = document.getElementById('revert-confirm');
+  if(!modal) return;
+
+  let pendingGid = null;  // 当前待还原的 gid
+
+  function openModal(gid){
+    pendingGid = gid;
+    modal.classList.add('show');
+  }
+  function closeModal(){
+    pendingGid = null;
+    modal.classList.remove('show');
+  }
+
+  // 事件委托：点击任意 .btn-revert-one（renderSlim 会重建按钮，委托更稳）
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-revert-one');
+    if(!btn) return;
+    const gid = btn.dataset.revertGid;
+    if(!gid) return;
+    openModal(gid);
+  });
+
+  // 取消
+  btnCancel.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && modal.classList.contains('show')) closeModal();
+  });
+
+  // 确认还原
+  btnConfirm.addEventListener('click', () => {
+    const gid = pendingGid;
+    if(!gid){ closeModal(); return; }
+
+    // 1. 找到该 gid 下所有 output_id
+    const blocks = BLOCKS[gid] || [];
+    const idsToClear = blocks.map(b => b.output_id);
+
+    // 2. 从 state.edits 里逐个删掉
+    idsToClear.forEach(id => { delete state.edits[id]; });
+
+    // 3. 关闭确认框
+    closeModal();
+
+    // 4. 重渲染中栏
+    if(typeof renderSlim === 'function') renderSlim();
+
+    // 5. 若当前仍在编辑态：renderSlim 重建的 .sentence 默认不可编辑，重新打开
+    if(state.editing){
+      const colSlim = document.getElementById('col-slim');
+      if(colSlim){
+        colSlim.querySelectorAll('.sentence').forEach(el => {
+          el.setAttribute('contenteditable', 'true');
+        });
+      }
+    }
+
+    // 6. 保存到 sessionStorage
+    if(typeof saveHomeState === 'function') saveHomeState();
+
+    // 7. 提示
+    if(typeof showToast === 'function') showToast('✅ 已还原该经历的文字修改');
+  });
+})();
+
+// 结果页"← 返回整理"：仅在"自己给简历瘦身"整理完成后显示
+function updateBackEditBtn(){
+  const btn = document.getElementById('btn-back-edit');
+  if(!btn) return;
+  btn.style.display = state.cameFromEdit ? '' : 'none';
+}
+document.getElementById('btn-back-edit')?.addEventListener('click', () => {
+  if(state.editPlan){
+    openEditPage('result');   // 带当前 editPlan 回编辑页
+  }
+});
+
+function scoreColor(score){
+  const s = Math.max(0, Math.min(10, score));
+  const start = [238,242,254];
+  const end = [67,73,184];
+  const t = s/10;
+  const r = Math.round(start[0]+(end[0]-start[0])*t);
+  const g = Math.round(start[1]+(end[1]-start[1])*t);
+  const b = Math.round(start[2]+(end[2]-start[2])*t);
+  const lum = (0.299*r + 0.587*g + 0.114*b) / 255;
+  return {bg:`rgb(${r},${g},${b})`, fg: lum > 0.58 ? '#1f2329' : '#fff', bd:'rgba(94,106,210,.18)'};
+}
+
+/* ---------- 双向悬停高亮 ---------- */
+function bindHoverEvents(){
+  const colOrig = document.getElementById('col-original');
+  const colSlim = document.getElementById('col-slim');
+
+  const clearHl = ()=>{
+    colOrig.querySelectorAll('.src.hl').forEach(el=>el.classList.remove('hl'));
+    colSlim.querySelectorAll('.sentence.hl').forEach(el=>el.classList.remove('hl'));
+  };
+
+  /* ---------- 悬停：中栏句子 → 左栏原文 ---------- */
+  colSlim.addEventListener('mouseover', e=>{
+    const s = e.target.closest('.sentence');
+    if(!s || !s.dataset.src) return;
+    clearHl();
+    s.dataset.src.split(' ').filter(Boolean).forEach(id=>{
+      colOrig.querySelector(`.src[data-id="${id}"]`)?.classList.add('hl');
+    });
+    s.classList.add('hl');
+  });
+  colSlim.addEventListener('mouseout', e=>{
+    if(e.target.closest('.sentence')) clearHl();
+  });
+
+  /* ---------- 悬停：左栏原文 → 中栏句子 ---------- */
+  colOrig.addEventListener('mouseover', e=>{
+    const s = e.target.closest('.src');
+    if(!s) return;
+    clearHl();
+    const id = s.dataset.id;
+    colSlim.querySelectorAll(`.sentence[data-src~="${id}"]`).forEach(el=>el.classList.add('hl'));
+    s.classList.add('hl');
+  });
+  colOrig.addEventListener('mouseout', e=>{
+    if(e.target.closest('.src')) clearHl();
+  });
+
+  /* ---------- 点击：中栏句子 → 左栏平滑滚动 + 闪烁 ---------- */
+  colSlim.addEventListener('click', e=>{
+    const s = e.target.closest('.sentence');
+    if(!s || !s.dataset.src) return;
+
+    const ids = s.dataset.src.split(' ').filter(Boolean);
+    let target = null;
+    for(const id of ids){
+      const el = colOrig.querySelector(`.src[data-id="${id}"]`);
+      if(el){ target = el; break; }
+    }
+    if(!target) return;
+
+    clearHl();
+    ids.forEach(id=>colOrig.querySelector(`.src[data-id="${id}"]`)?.classList.add('hl'));
+    s.classList.add('hl');
+
+    // 平滑滚动，让目标段落居中
+    const cRect = colOrig.getBoundingClientRect();
+    const eRect = target.getBoundingClientRect();
+    const relTop = eRect.top - cRect.top + colOrig.scrollTop;
+    colOrig.scrollTo({
+      top: Math.max(0, relTop - colOrig.clientHeight/2 + target.offsetHeight/2),
+      behavior:'smooth'
+    });
+
+    // 闪一下确认
+    target.animate(
+      [{background:'rgba(94,106,210,.35)'},{background:'rgba(94,106,210,.16)'}],
+      {duration:500, easing:'ease-out'}
+    );
+  });
+
+  /* ---------- 点击：左栏原文 → 中栏平滑滚动 + 闪烁 ---------- */
+  colOrig.addEventListener('click', e=>{
+    const s = e.target.closest('.src');
+    if(!s) return;
+
+    const id = s.dataset.id;
+    const targets = colSlim.querySelectorAll(`.sentence[data-src~="${id}"]`);
+    if(!targets.length) return;
+
+    clearHl();
+    targets.forEach(el=>el.classList.add('hl'));
+    s.classList.add('hl');
+
+    const first = targets[0];
+    const cRect = colSlim.getBoundingClientRect();
+    const eRect = first.getBoundingClientRect();
+    const relTop = eRect.top - cRect.top + colSlim.scrollTop;
+    colSlim.scrollTo({
+      top: Math.max(0, relTop - colSlim.clientHeight/2 + first.offsetHeight/2),
+      behavior:'smooth'
+    });
+
+    first.animate(
+      [{background:'rgba(94,106,210,.35)'},{background:'rgba(94,106,210,.16)'}],
+      {duration:500, easing:'ease-out'}
+    );
+  });
+}
+
+function parseReportMarkdown(md){
+  const lines = md.split('\n').map(l=>l.trim());
+  const result = {
+    total: '—',
+    verdict: '',
+    dims: [],       // [{name, value}]
+    hits: [],       // [{req, ev}]
+    misses: [],     // [{req, ev}]
+    changes: [],    // [{opLabel, opKey, items:[{name, reason}]}]
+    suggestions: [] // [string, ...]
+  };
+
+  let i = 0;
+  let mode = null;
+
+  // ---- 1. 总体匹配 ----
+  // 找第一处 "总体匹配"
+  for(; i<lines.length; i++){
+    if(lines[i] === '总体匹配'){
+      // 下一行是 "55 / 100"
+      const m = (lines[i+1]||'').match(/^(\d+)\s*\/\s*100$/);
+      if(m){ result.total = m[1]; i++; }
+      // 再下一行是结论
+      if(lines[i+1] && !/^\d/.test(lines[i+1])){
+        result.verdict = lines[i+1];
+        i++;
+      }
+      break;
+    }
+  }
+
+  // ---- 2. 四维度分数 ----
+  // 找到 "技能" 那一行之后
+  for(; i<lines.length; i++){
+    const l = lines[i];
+    if(!l) continue;
+    const dimMatch = l.match(/^(技能|内容|行业|资历)$/);
+    if(dimMatch){
+      const next = (lines[i+1]||'').match(/^([\d.]+)\s*\/\s*10$/);
+      if(next){
+        result.dims.push({name: dimMatch[1], value: parseFloat(next[1])});
+        i++;
+        continue;
+      }
+    }
+    // 到达"命中项"就停
+    if(l.includes('命中项')){ mode = 'hit'; break; }
+  }
+
+  // ---- 3. 命中项 / 缺口项 ----
+  for(; i<lines.length; i++){
+    const l = lines[i];
+    if(!l){ continue; }
+
+    if(l.includes('命中项') && !l.includes('缺口')){ mode = 'hit'; continue; }
+    if(l.includes('缺口项')){ mode = 'miss'; continue; }
+    if(l === '改动说明'){ mode = 'change'; continue; }
+    if(l === '补充建议'){ mode = 'suggest'; continue; }
+
+    if(mode === 'hit' || mode === 'miss'){
+      // 格式：`要求：证据`
+      const idx = l.indexOf('：');
+      if(idx > 0){
+        const req = l.slice(0, idx).trim();
+        const ev = l.slice(idx + 1).trim();
+        if(mode === 'hit') result.hits.push({req, ev});
+        else result.misses.push({req, ev});
+      }
+    }else if(mode === 'change'){
+      // op 分组行： "✂️ 精简压缩：…" 或 "🔗 合并：…"
+      const opMatch = l.match(/^(\S+)\s+(精简压缩|压缩|改写|合并|保留原文|前置|降级|省略)：/);
+      if(opMatch){
+        const opMap = {
+          '精简压缩':'compress','压缩':'compress','改写':'reword','合并':'merge',
+          '保留原文':'verbatim','前置':'reorder','降级':'demote','省略':'omit'
+        };
+        const opLabel = opMatch[1] + ' ' + opMatch[2];
+        const opKey = opMap[opMatch[2]] || 'compress';
+        result.changes.push({opLabel, opKey, items: []});
+      }else if(result.changes.length){
+        // 条目行："<经历名>：<reason>"
+        const idx = l.indexOf('：');
+        if(idx > 0){
+          const name = l.slice(0, idx).trim();
+          const reason = l.slice(idx + 1).trim();
+          result.changes[result.changes.length-1].items.push({name, reason});
+        }
+      }
+    }else if(mode === 'suggest'){
+      // "1. xxx" 或 "2. xxx"
+      const m = l.match(/^(\d+)\.\s+(.+)$/);
+      if(m) result.suggestions.push(m[2]);
+    }
+  }
+
+  return result;
+}
+
+// 改动条目点击 → 高亮中栏 + 左栏对应经历
+// 关键：改动说明里的"经历名"= group_title（如"订单中心"），
+//       但中栏 exp-block 的 data-exp 是 group_id（G1）。
+//       所以需要反查：遍历 EXPS，找 title 匹配的 group。
+function bindChangeItems(){
+  const colOrig = document.getElementById('col-original');
+  const colSlim = document.getElementById('col-slim');
+  const clearHl = ()=>{
+    colOrig.querySelectorAll('.src.hl').forEach(el=>el.classList.remove('hl'));
+    colSlim.querySelectorAll('.exp-block .sentence.hl').forEach(el=>el.classList.remove('hl'));
+  };
+
+  document.querySelectorAll('.change-item[data-change-name]').forEach(item=>{
+    item.style.cursor = 'pointer';
+    item.addEventListener('click', ()=>{
+      const name = item.dataset.changeName;
+      // 反查 group_id：EXPS[gid].title 包含 name（或反过来）
+      let gid = null;
+      Object.keys(EXPS).forEach(g => {
+        if(EXPS[g].title === name || EXPS[g].title.includes(name) || name.includes(EXPS[g].title)){
+          gid = g;
+        }
+      });
+      if(!gid) return;
+
+      clearHl();
+
+      // 中栏：高亮该 exp-block 里所有 sentence
+      const block = colSlim.querySelector(`.exp-block[data-exp="${gid}"]`);
+      if(!block) return;
+      block.querySelectorAll('.sentence').forEach(el=>el.classList.add('hl'));
+
+      // 左栏：用 BLOCKS[gid] 里每条 change 的 source_ids 高亮
+      const srcIds = new Set();
+      (BLOCKS[gid] || []).forEach(b=>{
+        (b.source_ids || []).forEach(id=>srcIds.add(id));
+      });
+      srcIds.forEach(id=>{
+        colOrig.querySelector(`.src[data-id="${id}"]`)?.classList.add('hl');
+      });
+
+      // 滚动中栏到该经历
+      const cRect = colSlim.getBoundingClientRect();
+      const eRect = block.getBoundingClientRect();
+      const relTop = eRect.top - cRect.top + colSlim.scrollTop;
+      colSlim.scrollTo({
+        top: Math.max(0, relTop - colSlim.clientHeight/2 + block.offsetHeight/2),
+        behavior:'smooth'
+      });
+    });
+  });
+}
+
+/* ---------- 匹配报告：解析 Markdown ---------- */
+function renderReport(bundle){
+  const md = bundle.report_markdown || '';
+  const parsed = parseReportMarkdown(md);
+
+  // 顶部摘要：总体分 + 结论
+  document.getElementById('rs-score').innerHTML =
+    `${parsed.total}<small> / 100</small>`;
+  document.getElementById('rs-verdict').textContent = parsed.verdict || '—';
+
+  // 展开区：四维度 + 命中 + 缺口 + 改动 + 建议
+  let html = '';
+
+  // ---- 1. 四维度分数 ----
+  if(parsed.dims.length){
+    html += `<div class="rp-section" style="background:#fff">
+      <h4 style="font-size:13px;font-weight:600;margin-bottom:12px">📊 四维度分数</h4>`;
+    parsed.dims.forEach(d=>{
+      const pct = Math.round((d.value / 10) * 100);
+      html += `<div class="dim-bar-row">
+        <span class="db-name">${escapeHtml(d.name)}</span>
+        <div class="db-track"><div class="db-fill" style="width:${pct}%"></div></div>
+        <span class="db-val">${d.value} / 10</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // ---- 2. 命中项 ----
+  html += `<div class="rp-block hit">
+    <h4>✅ 命中项（JD 要求 → 简历证据）</h4>`;
+  if(parsed.hits.length === 0){
+    html += `<div class="match-item"><span class="mi-ev">（无）</span></div>`;
+  }else{
+    parsed.hits.forEach(h=>{
+      html += `<div class="match-item hit">
+        <span class="match-dot"></span>
+        <div><span class="mi-req">${escapeHtml(h.req)}：</span>
+        <span class="mi-ev">${escapeHtml(h.ev)}</span></div>
+      </div>`;
+    });
+  }
+  html += `</div>`;
+
+  // ---- 3. 缺口项 ----
+  html += `<div class="rp-block miss">
+    <h4>⚠️ 缺口项（JD 要求但简历未体现）</h4>`;
+  if(parsed.misses.length === 0){
+    html += `<div class="match-item"><span class="mi-ev">（无）</span></div>`;
+  }else{
+    parsed.misses.forEach(h=>{
+      html += `<div class="match-item miss">
+        <span class="match-dot"></span>
+        <div><span class="mi-req">${escapeHtml(h.req)}：</span>
+        <span class="mi-ev">${escapeHtml(h.ev)}</span></div>
+      </div>`;
+    });
+  }
+  html += `</div>`;
+
+  // ---- 4. 改动说明（按 op 分组）----
+  if(parsed.changes.length){
+    html += `<div class="rp-section" style="background:#fff">
+      <h4 style="font-size:13px;font-weight:600;margin-bottom:12px">✂️ 改动说明</h4>`;
+    parsed.changes.forEach(g=>{
+      // g = {opLabel, opKey, items: [{name, reason}]}
+      html += `<div style="font-size:12.5px;font-weight:600;color:var(--text-2);padding:8px 0 4px">${escapeHtml(g.opLabel)}</div>`;
+      g.items.forEach(it=>{
+        html += `<div class="change-item" data-change-name="${escapeHtml(it.name)}">
+          <span class="op-tag cn-${g.opKey}">${escapeHtml(g.opLabel)}</span>
+          <div><b>${escapeHtml(it.name)}：</b>${escapeHtml(it.reason)}</div>
+        </div>`;
+      });
+    });
+    html += `</div>`;
+  }
+
+  // ---- 5. 补充建议 ----
+  if(parsed.suggestions.length){
+    html += `<div class="rp-divider"></div>
+      <div class="rp-section" style="background:#fff">
+      <h4 style="font-size:13px;font-weight:600;margin-bottom:10px">💡 补充建议</h4>
+      <ol class="sug-list">`;
+    parsed.suggestions.forEach(s=>{
+      html += `<li>${escapeHtml(s)}</li>`;
+    });
+    html += `</ol></div>`;
+  }
+
+  // ---- 6. 原始 Markdown（折叠，供调试）----
+  html += `<details style="margin-top:16px">
+    <summary style="cursor:pointer;font-size:12px;color:var(--muted);padding:6px 0">📄 查看报告原文（Markdown）</summary>
+    <pre style="white-space:pre-wrap;font-size:12px;line-height:1.7;background:#fff;border:1px solid #eee;border-radius:8px;padding:12px;max-height:320px;overflow:auto;margin-top:8px">${escapeHtml(md)}</pre>
+  </details>`;
+
+  document.getElementById('report-detail').innerHTML = html;
+
+  // 改动条目点击 → 高亮对应经历
+  bindChangeItems();
+}
+
+/* ---------- 工具 ---------- */
+function escapeHtml(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ---------- 报告折叠切换（事件委托，防止按钮被重写）---------- */
+document.addEventListener('click', function(e){
+  const btn = e.target.closest('#btn-toggle-report');
+  if(!btn) return;
+  const d = document.getElementById('report-detail');
+  if(!d) return;
+  const collapsed = d.classList.toggle('collapsed');
+  btn.textContent = collapsed ? '查看完整匹配报告' : '收起完整匹配报告';
+});
+
+/* =========================================================
+   首页 + 配置抽屉（从 prototype/index.html 迁移）
+   - boot() 只在 doGenerate() 时调用，页面初始停在首页
+   ========================================================= */
+
+// 示例上传内容（一期：生成时仍跑预置 A_live × JD1_backend，示例仅用于演示上传态）
+const SAMPLE_RESUME_LIVE = [
+  '张伟｜男｜29岁｜杭州｜本科｜5年后端开发经验',
+  '求职意向：后端开发工程师',
+  '2021.07-至今 杭州某电子商务有限公司 后端开发工程师：负责订单中心重构、支付回调稳定性、对账系统，参与618/双11大促保障。',
+  '2020.03-2021.06 杭州某网络科技有限公司 后端开发工程师：负责会员积分与优惠券模块。',
+  '2018.07-2020.02 上海某信息技术有限公司 软件开发工程师：参与进销存、质检管理系统。',
+  '技能：Java、Spring Boot/Cloud、MySQL、Redis、RabbitMQ、Linux、Docker。'
+].join('\n');
+const SAMPLE_JD_LIVE = [
+  '后端开发工程师（AI Agent）',
+  '本科及以上，1-3年后端开发经验，大厂经历优先。',
+  '熟练 Java/Go 其一，扎实计算机基础；熟悉 MySQL、Redis，了解分布式基础；熟悉 Linux。',
+  '负责 AI Agent 后端服务开发（智能体调度、工具调用、记忆模块、对话链路）；',
+  '业务后端接口开发、系统优化、线上问题排查；参与技术方案设计，跟进大模型技术落地。',
+  '有 Agent/大模型应用、向量数据库、LLM 服务对接经验及教育行业经验优先。'
+].join('\n');
+
+/* ================= 状态 ================= */
+const DIMS = [
+  {key:'skill',name:'技能'},{key:'content',name:'内容'},
+  {key:'industry',name:'行业'},{key:'level',name:'资历'}
+];
+const PRESET_SCORES = {
+  general:{skill:20,content:45,industry:15,level:10},
+  tech:   {skill:30,content:30,industry:10,level:30},
+  manage: {skill:20,content:35,industry:10,level:35},
+  campus: {skill:30,content:30,industry:5, level:5 }
+};
+const state = {
+  resume:null, jd:null,
+  drawerOpen:false,
+  generated:false,
+  preset:'general',
+  scores:Object.assign({},PRESET_SCORES.general),
+  checked:{skill:true,content:true,industry:true,level:true},
+  snapshot:null, // 上次生成时的参数
+  order:[],      // live 数据由 boot() 填充（G1..Gn），初始为空
+  deleted:[],
+  edits:{},
+  editing:false,
+  cameFromEdit:false,   // 是否从"自己给简历瘦身"的编辑页来的
+  // 编辑页整理计划：kept=主列表中组首(leader)顺序；removed=回收站；selected=勾选保留；groups={leaderId:[成员id]}
+  editPlan:null,
+  editReturn:'home', // 编辑页返回目标：home / result
+  lastBundle:null    // 最近一次真上传跑完的后端产物（buildModels 已消费）
+};
+state.snapshot = snap();
+
+// 模式B（一键生成）：系统自动全选 + 自动聚类。
+// live 版首生成前 state.order 为空，回退到当前 EXPS 的分组（boot 后已填充）
+function makeSystemPlan(){
+  // 编辑页"完成"会把 EXPS 重建为 G_ 前缀的新模型；重新 boot 后 EXPS 恢复原始 G 全集，
+  // 故历史 order/deleted 里只接受仍存在于当前 EXPS 的 id，对不上就以当前全集为准
+  const all=Object.keys(EXPS);
+  const validOrder=(Array.isArray(state.order)?state.order:[]).filter(id=>EXPS[id]);
+  const kept=(validOrder.length===all.length)?validOrder:all;
+  const removed=(Array.isArray(state.deleted)?state.deleted:[]).filter(id=>EXPS[id]);
+  return {kept:kept.slice(), removed, selected:kept.slice(), groups:{}};
+}
+// 模式A（自己瘦身）：全部经历进入主列表，按相关度从高到低排序，默认全选，不做自动聚类
+function makeManualPlan(){
+  const all=Object.keys(EXPS).sort((a,b)=>EXPS[b].score-EXPS[a].score);
+  return {kept:all, removed:[], selected:all.slice(), groups:{}};
+}
+
+function snap(){
+  return JSON.stringify({
+    scores:state.scores,
+    checked:state.checked,
+    resume:state.resume?state.resume.text:null,
+    jd:state.jd?state.jd.text:null
+  });
+}
+function isDirty(){return snap()!==state.snapshot;}
+function bothUploaded(){return !!(state.resume && state.jd);}
+
+/* ================= 上传区 ================= */
+const uploadEditState={resume:{editing:false,original:''},jd:{editing:false,original:''}};
+
+function initPanel(kind){
+  const card = document.getElementById('card-'+kind);
+  const tabs = card.querySelectorAll('.tabs button');
+  const drop = card.querySelector('.dropzone');
+  const fileInput = card.querySelector('input[type=file]');
+  const paste = card.querySelector('.paste-area');
+  const ta = card.querySelector('textarea');
+  const loaded = card.querySelector('.loaded-box');
+  const preview = document.getElementById(kind+'-lb-preview');
+  const editBtn = card.querySelector('.lb-edit-btn');
+  const editMeta = document.getElementById(kind+'-edit-meta');
+  let mode='file';
+
+  tabs.forEach(b=>b.addEventListener('click',()=>{
+    mode=b.dataset.mode;
+    tabs.forEach(x=>x.classList.toggle('active',x===b));
+    drop.classList.toggle('hidden',mode!=='file');
+    paste.classList.toggle('hidden',mode!=='paste');
+  }));
+  drop.addEventListener('click',()=>fileInput.click());
+  drop.addEventListener('dragover',e=>{e.preventDefault();drop.style.borderColor='var(--primary)';});
+  drop.addEventListener('dragleave',()=>{drop.style.borderColor='';});
+  drop.addEventListener('drop',e=>{
+    e.preventDefault();drop.style.borderColor='';
+    if(e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change',()=>{if(fileInput.files[0]) readFile(fileInput.files[0]);});
+  ta.addEventListener('input',()=>{
+    const t=ta.value.trim();
+    if(t) state[kind]={name:'粘贴文本',text:t,file:null}; else state[kind]=null;
+    refreshUploaded();
+  });
+
+  // 剪切板一键粘贴
+  card.querySelector('.paste-clip-btn').addEventListener('click',async()=>{
+    try{
+      const txt=await navigator.clipboard.readText();
+      ta.value=txt;
+      ta.dispatchEvent(new Event('input'));
+    }catch(e){
+      ta.focus();
+      ta.placeholder='浏览器拒绝读取剪切板，请手动粘贴（Ctrl+V）到此处';
+    }
+  });
+
+  // 上传文本编辑按钮
+  editBtn.addEventListener('click',()=>{
+    const s=uploadEditState[kind];
+    if(!s.editing){
+      s.editing=true;
+      preview.setAttribute('contenteditable','true');
+      s.original=preview.textContent; // 以渲染后的实际文本为准
+      preview.classList.remove('edited-text');
+      editBtn.textContent='✓ 完成修改';
+      editBtn.classList.add('active');
+      editMeta.textContent='正在编辑…修改完成后点击「完成修改」锁定';
+      editMeta.style.color='var(--primary)';
+      preview.focus();
+    }else{
+      s.editing=false;
+      preview.setAttribute('contenteditable','false');
+      editBtn.textContent='✎ 编辑';
+      editBtn.classList.remove('active');
+      const newText=preview.textContent;
+      const changed=state[kind] && newText.replace(/\s+$/,'')!==s.original.replace(/\s+$/,'');
+      if(changed){
+        state[kind].text=newText;
+        preview.classList.add('edited-text');
+        editMeta.textContent='✓ 文本已修改（与原始上传内容不同）';
+        editMeta.style.color='var(--green)';
+      }else{
+        preview.classList.remove('edited-text');
+        editMeta.textContent='';
+      }
+      updateGenerateBtn();
+    }
+  });
+
+  async function readFile(f){
+    const name = f.name || '';
+    const ext = (name.split('.').pop() || '').toLowerCase();
+
+    // 纯文本类：直接读
+    if(['txt','md','markdown',''].includes(ext)){
+      const text = await f.text();
+      state[kind] = { name, text, file: null };
+      refreshUploaded();
+      return;
+    }
+
+    // PDF：前端解析
+    if(ext === 'pdf'){
+      showToast('正在解析 PDF…');
+      try{
+        const text = await parsePdf(f);
+        if(!text.trim()){
+          showToast('PDF 中未提取到文本（可能是扫描件），请改用"粘贴文本"');
+          return;
+        }
+        state[kind] = { name, text, file: null };
+        refreshUploaded();
+        showToast('PDF 解析完成');
+      }catch(e){
+        console.error(e);
+        showToast('PDF 解析失败：' + e.message);
+      }
+      return;
+    }
+
+    // DOCX：前端解析
+    if(ext === 'docx'){
+      showToast('正在解析 Word…');
+      try{
+        const arrayBuffer = await f.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        const text = result.value || '';
+        if(!text.trim()){
+          showToast('Word 中未提取到文本');
+          return;
+        }
+        state[kind] = { name, text, file: null };
+        refreshUploaded();
+        showToast('Word 解析完成');
+      }catch(e){
+        console.error(e);
+        showToast('Word 解析失败：' + e.message);
+      }
+      return;
+    }
+
+    if(ext === 'doc'){
+      showToast('不支持老 .doc 格式，请用 Word 打开后另存为 .docx 再上传');
+      return;
+    }
+
+    showToast('不支持的文件格式，请上传 PDF / Word (.docx) / Markdown / TXT');
+  }
+  function showLoaded(){
+    const d=state[kind];
+    loaded.classList.remove('hidden');
+    drop.classList.add('hidden');
+    paste.classList.add('hidden');
+    tabs.forEach(x=>x.classList.toggle('active',false));
+    card.querySelector('.upload-card-head .tag').textContent='已上传';
+    card.querySelector('.upload-card-head .tag').classList.add('ok');
+    document.getElementById(kind+'-lb-name').textContent=d.name;
+    document.getElementById(kind+'-lb-meta').textContent=d.text.length+' 字符';
+    preview.textContent=d.text;
+    preview.setAttribute('contenteditable','false');
+    uploadEditState[kind]={editing:false,original:d.text};
+    preview.classList.remove('edited-text');
+    editBtn.textContent='✎ 编辑';
+    editBtn.classList.remove('active');
+    editMeta.textContent='';
+  }
+  function refreshUploaded(){
+    if(state[kind]) showLoaded(); else {
+      loaded.classList.add('hidden');
+      if(mode==='file') drop.classList.remove('hidden'); else paste.classList.remove('hidden');
+      const tag=card.querySelector('.upload-card-head .tag');
+      tag.textContent='未上传';tag.classList.remove('ok');
+    }
+    updateGenerateBtn();
+  }
+  document.getElementById(kind+'-repick').addEventListener('click',()=>{fileInput.click();});
+  document.getElementById(kind+'-clear').addEventListener('click',()=>{
+    state[kind]=null;ta.value='';fileInput.value='';mode='file';
+    tabs.forEach(x=>x.classList.toggle('active',x.dataset.mode==='file'));
+    refreshUploaded();
+  });
+  document.getElementById(kind+'-sample').addEventListener('click',()=>{
+    // live 版：不读原型的 SAMPLE_* 常量，直接塞一段文本并显示已上传
+    const txt = kind==='resume'?SAMPLE_RESUME_LIVE:SAMPLE_JD_LIVE;
+    state[kind]={
+      name:kind==='resume'?'示例简历：张伟，后端5年.md':'示例 JD：后端开发工程师（AI Agent）.md',
+      text:txt,
+      file:null,
+    };
+    refreshUploaded();
+  });
+}
+initPanel('resume');initPanel('jd');
+
+/* ================= 抽屉：维度 / 滑块 / 预设 ================= */
+function renderDims(){
+  const list=document.getElementById('dim-list');
+  list.innerHTML='';
+  const sum=DIMS.filter(d=>state.checked[d.key]).reduce((a,d)=>a+(+state.scores[d.key]||0),0);
+  DIMS.forEach(d=>{
+    const checked=state.checked[d.key];
+    const val=+state.scores[d.key]||0;
+    const pct=(checked&&sum>0)?Math.round(val/sum*100):0;
+    const fixed = state.preset!=='custom';
+    const disabled = !checked || fixed;
+    const row=document.createElement('div');
+    row.className='dim-row'+(checked?'':' disabled');
+    row.innerHTML=`
+      <div class="dim-top">
+        <label class="dim-check"><input type="checkbox" ${checked?'checked':''}> <span class="dim-name">${d.name}</span></label>
+        <span class="dim-pct">${pct}%</span>
+      </div>
+      <div class="dim-bottom">
+        <input type="range" min="0" max="100" value="${val}" ${disabled?'disabled':''} style="--fill:${val}%">
+        <input type="number" class="score-input" min="0" max="100" value="${val}" ${disabled?'disabled':''}>
+      </div>`;
+    const cb=row.querySelector('input[type=checkbox]');
+    const range=row.querySelector('input[type=range]');
+    const num=row.querySelector('input[type=number]');
+    cb.addEventListener('change',()=>{
+      markCustom(); // 勾选/取消均属调参 → 进入自定义
+      state.checked[d.key]=cb.checked;
+      renderDims();updateGenerateBtn();
+    });
+    range.addEventListener('input',()=>{
+      state.scores[d.key]=+range.value;num.value=range.value;
+      range.style.setProperty('--fill',range.value+'%');
+      updatePctLive(row);
+    });
+    range.addEventListener('change',()=>{renderDims();updateGenerateBtn();});
+    num.addEventListener('input',()=>{
+      let v=parseInt(num.value,10);if(isNaN(v))v=0;
+      v=Math.max(0,Math.min(100,v));
+      state.scores[d.key]=v;range.value=v;range.style.setProperty('--fill',v+'%');
+      updatePctLive(row);
+    });
+    num.addEventListener('blur',()=>{renderDims();updateGenerateBtn();});
+    list.appendChild(row);
+  });
+}
+function updatePctLive(){
+  const sum=DIMS.filter(d=>state.checked[d.key]).reduce((a,d)=>a+(+state.scores[d.key]||0),0);
+  [...document.querySelectorAll('.dim-row')].forEach((r,i)=>{
+    const d=DIMS[i];if(!state.checked[d.key]){r.querySelector('.dim-pct').textContent='0%';return;}
+    const v=+state.scores[d.key]||0;
+    r.querySelector('.dim-pct').textContent=(sum>0?Math.round(v/sum*100):0)+'%';
+  });
+}
+function markCustom(){
+  if(state.preset!=='custom') state.preset='custom';
+  syncPresetActive();
+}
+function syncPresetActive(){
+  document.querySelectorAll('.preset-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.preset===state.preset);
+  });
+}
+document.querySelectorAll('.preset-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const p=btn.dataset.preset;
+    if(p==='auto'){
+      // 系统自动判断：分析 JD 静默落到最接近的固定预设（本 JD 为后端技术岗 → 技术）
+      state.preset='tech';
+    }else if(p==='custom'){
+      state.preset='custom'; // 继承当前分数
+    }else{
+      state.preset=p;
+      state.scores=Object.assign({},PRESET_SCORES[p]);
+      state.checked={skill:true,content:true,industry:true,level:true};
+    }
+    syncPresetActive();renderDims();updateGenerateBtn();
+  });
+});
+
+/* 抽屉开合 */
+const drawer=document.getElementById('drawer');
+const cfgTrigger=document.getElementById('cfg-trigger');
+function openDrawer(){state.drawerOpen=true;drawer.classList.add('open');cfgTrigger.classList.add('open');cfgTrigger.innerHTML='<span>✕</span>收起配置';updateGenerateBtn();}
+function closeDrawer(){state.drawerOpen=false;drawer.classList.remove('open');cfgTrigger.classList.remove('open');cfgTrigger.innerHTML='<span>⚙</span>进入瘦身配置';updateGenerateBtn();}
+cfgTrigger.addEventListener('click',()=>state.drawerOpen?closeDrawer():openDrawer());
+document.getElementById('drawer-close').addEventListener('click',closeDrawer);
+
+/* ================= 一键生成按钮状态 ================= */
+const btnGen=document.getElementById('btn-generate');
+const genHint=document.getElementById('gen-hint');
+const genTip=document.getElementById('gen-tip');
+// 按钮三态：incomplete=灰不可点 / fresh=主色首次生成 / view=次色查看已生成 / changed=主色重新生成
+// _dataLoaded：boot() 是否已把真数据渲染进结果页。刷新后即使 sessionStorage 恢复
+// generated=true，EXPS 仍为空，此时不能进 view 态（会进空白结果页），按 changed 处理，点击重新 boot
+let _dataLoaded=false;
+function genMode(){
+  if(!bothUploaded())return 'incomplete';
+  if(!state.generated)return 'fresh';
+  return (_dataLoaded && !isDirty())?'view':'changed';
+}
+function updateGenerateBtn(){
+  const mode=genMode();
+  let enabled=false,hint='',tip='',warn=false,viewMode=false;
+  if(mode==='incomplete'){
+    hint='请先上传完整的 Resume 和 JD';warn=true;
+  }else if(mode==='fresh'){
+    enabled=true;tip='按当前配置生成瘦身简历';
+  }else if(mode==='view'){
+    enabled=true;tip='回到结果页查看';viewMode=true;
+  }else{
+    enabled=true;tip='按新配置重新生成';
+  }
+  btnGen.disabled=!enabled;
+  btnGen.classList.toggle('view-mode',viewMode);
+  // 按钮内是双 span（主文案 + 小灰字），不能再用 textContent
+  const btnMain=btnGen.querySelector('.btn-main-text');
+  const btnSub=btnGen.querySelector('.btn-sub-text');
+  if(btnMain) btnMain.textContent=viewMode?'查看已瘦身的简历':'一键生成瘦身简历';
+  if(btnSub) btnSub.style.display=viewMode?'none':'';
+  genHint.textContent=hint;
+  genHint.classList.toggle('warn',warn);
+  genTip.textContent=tip;
+  genTip.classList.toggle('show',!!tip);
+
+  // 抽屉内生成按钮同步
+  const db=document.getElementById('btn-gen-drawer');
+  const dh=document.getElementById('drawer-gen-hint');
+  if(db){
+    db.disabled=!enabled;
+    dh.textContent=hint||tip;
+    dh.classList.toggle('warn',warn);
+  }
+
+  // 次按钮【自己给简历瘦身】：灰色逻辑与主按钮相同（未传完即禁用）
+  const btnManual=document.getElementById('btn-generate-manual');
+  const manualTip=document.getElementById('manual-tip');
+  if(btnManual){
+    btnManual.disabled=!enabled;
+    const mTip=!enabled?'请先上传完整的 Resume 和 JD'
+      :(state.generated?'在当前瘦身结果基础上手动勾选、调序与合并':'自己勾选经历、调整顺序与分组');
+    manualTip.textContent=mTip;
+    manualTip.classList.toggle('show',enabled);
+  }
+}
+// 点击：view 态直接回结果页（不重新生成）；其余态执行生成
+function handleGenerateClick(){
+  if(!bothUploaded())return;
+  if(genMode()==='view'){
+    showView('view-result');
+  }else{
+    doGenerate();
+  }
+}
+btnGen.addEventListener('click',handleGenerateClick);
+document.getElementById('btn-gen-drawer').addEventListener('click',()=>{
+  const b=document.getElementById('btn-gen-drawer');
+  if(b.disabled)return;
+  closeDrawer();
+  handleGenerateClick();
+});
+// 模式A入口：自己给简历瘦身 → 真上传跑 pipeline → 进入编辑页
+document.getElementById('btn-generate-manual').addEventListener('click', async ()=>{
+  if(!bothUploaded()) return;
+
+  const loading = document.getElementById('loading');
+  const loadingTxt = document.getElementById('loading-txt');
+  loading.classList.add('show');
+  loadingTxt.textContent = '正在上传简历与 JD…';
+
+  try{
+    // 1. 上传
+    const job = await uploadCurrentInputs();
+    if(!job || !job.job_id) throw new Error('上传失败：后端未返回 job_id');
+
+    // 2. 轮询进度（pipeline 约 90 秒）
+    let meta = null;
+    while(true){
+      await sleep(1500);
+      meta = await fetch(`${API}/api/job/${job.job_id}`).then(r => r.json());
+      loadingTxt.textContent = meta.progress || '处理中…';
+      if(meta.status === 'done') break;
+      if(meta.status === 'failed') throw new Error(meta.error || '生成失败');
+    }
+
+    // 3. 拿结果
+    loadingTxt.textContent = '正在准备编辑页…';
+    const bundle = await fetch(`${API}/api/result/${job.job_id}`).then(r => r.json());
+    if(!bundle || !bundle.resume) throw new Error('结果为空');
+    normalizeBundleTiers(bundle);
+
+    // 4. 建模（**不渲染结果页**，只填充 EXPS / BLOCKS）
+    buildModels(bundle, bundle.scored);
+    state.lastBundle = bundle;
+
+    // 5. 初始化编辑计划（全部经历进入主列表、默认全选、按相关分排序）
+    state.editPlan = makeManualPlan();
+    state.editReturn = 'home';
+
+    // 6. 进编辑页
+    openEditPage('home');
+  }catch(e){
+    console.error(e);
+    showToast('生成失败：' + e.message);
+  }finally{
+    loading.classList.remove('show');
+  }
+});
+
+async function doGenerate(){
+  if(!bothUploaded()) return;
+
+  const loading = document.getElementById('loading');
+  const loadingTxt = document.getElementById('loading-txt');
+  loading.classList.add('show');
+  loadingTxt.textContent = '正在上传简历与 JD…';
+
+  try{
+    // 1. 上传
+    const job = await uploadCurrentInputs();
+    if(!job || !job.job_id) throw new Error('上传失败：后端未返回 job_id');
+
+    // 2. 轮询进度
+    let meta = null;
+    while(true){
+      await sleep(1500);
+      meta = await fetch(`${API}/api/job/${job.job_id}`).then(r => r.json());
+      loadingTxt.textContent = meta.progress || '处理中…';
+      if(meta.status === 'done'){ break; }
+      if(meta.status === 'failed'){
+        throw new Error(meta.error || '生成失败');
+      }
+    }
+
+    // 3. 拿结果
+    loadingTxt.textContent = '正在渲染…';
+    const bundle = await fetch(`${API}/api/result/${job.job_id}`).then(r => r.json());
+    if(!bundle || !bundle.resume){
+      throw new Error('结果为空');
+    }
+    normalizeBundleTiers(bundle);
+
+    // 4. 先切状态、再建模渲染。
+    //    cameFromEdit 必须在 renderAll 之前复位：renderAll→renderSlim 按它决定分层/单列，
+    //    若上一轮走过编辑页，state.order 还是旧的 G_ id，晚复位会拿旧 order 过滤新 EXPS → 结果页空白
+    state.generated = true;
+    state.snapshot = snap();
+    state.editing = false;
+    state.cameFromEdit = false;   // 一键生成（系统模式）不显示"← 返回整理"
+    state.editPlan = null;
+    state.lastBundle = bundle;   // 保存下来供"自己瘦身"等场景复用
+    _dataLoaded = true;          // genMode() 的 view 态依赖它，否则按钮只会停在"重新生成"
+
+    // 复位中栏行内编辑态（上一轮可能停在编辑模式）
+    const _colSlim = document.getElementById('col-slim');
+    if(_colSlim) _colSlim.classList.remove('editing');
+    const _btnEdit = document.getElementById('btn-edit');
+    if(_btnEdit){
+      _btnEdit.textContent = '✎ 进一步编辑';
+      _btnEdit.classList.remove('edit-complete');
+    }
+
+    // 5. 建模 + 渲染
+    buildModels(bundle, bundle.scored);
+    renderAll(bundle);
+
+    updateBackEditBtn();
+    showView('view-result');
+    updateGenerateBtn();
+  }catch(e){
+    console.error(e);
+    showToast('生成失败：' + e.message);
+  }finally{
+    loading.classList.remove('show');
+  }
+}
+
+// 上传当前输入：前端已把 PDF/Word 解析成文本，永远走 JSON 文本提交
+async function uploadCurrentInputs(){
+  const r = await fetch(`${API}/api/upload`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      resume_text: state.resume ? state.resume.text : '',
+      jd_text: state.jd ? state.jd.text : '',
+    }),
+  });
+  return await r.json();
+}
+
+// PDF 前端解析（pdf.js 动态 import，按需加载，不阻塞首屏）
+// 模块级函数，简历/JD 两个面板共用
+async function parsePdf(file){
+  const pdfjsLib = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs');
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs';
+
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const pages = [];
+  for(let i = 1; i <= pdf.numPages; i++){
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    // 用空格拼接；页面之间用空行分隔
+    const pageText = content.items.map(item => item.str || '').join(' ');
+    pages.push(pageText);
+  }
+  return pages.join('\n\n');
+}
+
+// 小工具
+function sleep(ms){ return new Promise(res => setTimeout(res, ms)); }
+
+// 后端 clusters[].tier 可能返回中文（"核心/相关/其他"），而前端渲染/CSS/导出
+// 统一用英文键 core/related/other。喂给 buildModels 前在 bundle 上原地归一。
+// （不改 buildModels：/api/bundle 预置数据仍是英文，英文值原样透传）
+function normalizeBundleTiers(bundle){
+  const CN2EN = {
+    '核心':'core', '核心内容':'core',
+    '相关':'related', '相关内容':'related',
+    '其他':'other', '其他内容':'other',
+  };
+  const norm = t => {
+    if(!t) return 'other';
+    const k = String(t).trim();
+    if(k==='core' || k==='related' || k==='other') return k;
+    return CN2EN[k] || 'other';
+  };
+  const cs = bundle && bundle.clusters && bundle.clusters.clusters;
+  if(Array.isArray(cs)){
+    cs.forEach(g => { g.tier = norm(g.tier); });
+  }
+  return bundle;
+}
+
+/* ================= 编辑页：经历整理（勾选/删除/恢复/排序/合并，从 prototype 迁移） ================= */
+const EDIT_TIER_LABEL={core:'核心内容',related:'相关内容',other:'其他内容'};
+let editSortable=null, editDragId=null, editMergeTarget=null;
+
+function openEditPage(from){
+  if(!state.editPlan) state.editPlan = from==='result' ? makeSystemPlan() : makeManualPlan();
+  state.editReturn=from||'home';
+  document.getElementById('edit-back').textContent = state.editReturn==='result'?'← 返回结果页':'← 返回首页';
+  renderEdit();
+  showView('view-edit');
+}
+function editActionsText(id){
+  const p=state.editPlan;
+  const e=EXPS[id] || (p && p._stash && p._stash.EXPS[id]);
+  return e ? (e.cardActions||[]).slice(0,2).map(a=>'· '+a).join('<br>') : '';
+}
+
+function renderEdit(){
+  const p=state.editPlan; if(!p)return;
+  // 被合并/已应用的成员不在当前 EXPS 中，其原始视图数据存在 plan._stash
+  const stash=p._stash||{EXPS:{},BLOCKS:{}};
+  const expOf=id=>EXPS[id]||stash.EXPS[id];
+  const listEl=document.getElementById('edit-list');
+  let html='';
+  p.kept.forEach(id=>{
+    const e=expOf(id);
+    if(!e)return;
+    const members=p.groups[id]||[];
+    const on=p.selected.includes(id);
+    html+=`<div class="drag-card leader${on?'':' unchecked'}" data-eid="${id}">
+      <div class="drag-grip" title="拖拽调整顺序；拖到其他卡片上可合并">⠿</div>
+      <label class="ec-check"><input type="checkbox" data-check="${id}" ${on?'checked':''}></label>
+      <div class="drag-body">
+        <div class="drag-card-top">
+          <span class="drag-title">${e.title}</span>
+          <span class="tier-chip ${e.tier}">${EDIT_TIER_LABEL[e.tier]}</span>
+          <span class="drag-score">相关度 ${e.score}</span>
+          ${members.length?`<span class="ec-gbadge">🔗 已合并 ${members.length+1} 段</span>`:''}
+        </div>
+        <div class="drag-role">${e.role}</div>
+        <div class="drag-actions">${editActionsText(id)}</div>`;
+    if(members.length){
+      html+='<div class="ec-members">';
+      members.forEach(mid=>{
+        const m=expOf(mid);
+        if(!m)return;
+        html+=`<div class="drag-card member" data-mid="${mid}">
+          <div class="drag-body">
+            <div class="drag-card-top">
+              <span class="drag-title">${m.title}</span>
+              <span class="tier-chip ${m.tier}">${EDIT_TIER_LABEL[m.tier]}</span>
+              <span class="drag-score">相关度 ${m.score}</span>
+            </div>
+            <div class="drag-role">${m.role}</div>
+            <div class="drag-actions">${editActionsText(mid)}</div>
+          </div>
+          <button class="ec-out" data-out="${mid}">移出本组</button>
+        </div>`;
+      });
+      html+=`<button class="ec-ungroup" data-ungroup="${id}">🔓 取消合并（拆出 ${members.length} 段）</button></div>`;
+    }
+    html+=`</div></div>`;
+  });
+  listEl.innerHTML=html;
+
+  // 计数 / 全选 / 合并按钮可用性
+  const selectedLeaders=p.kept.filter(id=>p.selected.includes(id));
+  // groups 只含仍保留的组，其成员一律算保留（成员选中态不再单独维护）
+  const memberCount=Object.values(p.groups).flat().length;
+  document.getElementById('ec-count').textContent=
+    `主列表 ${p.kept.length} 组 · 共 ${p.kept.length+memberCount} 段 · 已勾选 ${selectedLeaders.length} 组`;
+  document.getElementById('ec-all').checked=p.kept.length>0&&selectedLeaders.length===p.kept.length;
+  document.getElementById('btn-merge-group').disabled=selectedLeaders.length<2;
+
+  if(editSortable){editSortable.destroy();editSortable=null;}
+  editSortable=Sortable.create(listEl,{
+    draggable:'.drag-card.leader',
+    ghostClass:'sortable-ghost',chosenClass:'sortable-chosen',dragClass:'sortable-drag',
+    animation:180,easing:'cubic-bezier(0.2,0,0.2,1)',
+    onStart:evt=>{editDragId=evt.item.dataset.eid;editMergeTarget=null;},
+    onEnd:()=>{
+      const dragId=editDragId,target=editMergeTarget;
+      editDragId=null;editMergeTarget=null;
+      listEl.querySelectorAll('.drop-target').forEach(el=>el.classList.remove('drop-target'));
+      if(target&&target!==dragId){
+        mergeGroup(dragId,target); // 释放在卡片上 → 合并
+      }else{
+        const order=[...listEl.querySelectorAll(':scope > .drag-card.leader')].map(el=>el.dataset.eid);
+        if(order.length===p.kept.length) p.kept=order; // 释放在间隙 → 排序
+      }
+      renderEdit();
+    }
+  });
+  saveHomeState();
+}
+
+// 拖拽过程中实时判定落点：拖到卡面=合并目标，拖到间隙=普通排序
+document.addEventListener('dragover',e=>{
+  if(!editDragId) return;
+  const listEl=document.getElementById('edit-list');
+  if(!listEl || !listEl.offsetParent) return; // 编辑页未显示时忽略
+  const card=e.target.closest&&e.target.closest('#edit-list > .drag-card.leader');
+  const target=(card&&card.dataset.eid!==editDragId)?card.dataset.eid:null;
+  if(target!==editMergeTarget){
+    listEl.querySelectorAll('.drop-target').forEach(el=>el.classList.remove('drop-target'));
+    editMergeTarget=target;
+    if(target) listEl.querySelector(`.drag-card.leader[data-eid="${target}"]`)?.classList.add('drop-target');
+  }
+});
+
+// ---- plan 操作 ----
+function removeExp(id){ // 删除：leader 连同其组成员一起进回收站
+  const p=state.editPlan;
+  const i=p.kept.indexOf(id); if(i<0)return;
+  const members=(p.groups[id]||[]).slice();
+  p.kept.splice(i,1);
+  [id,...members].forEach(x=>{if(!p.removed.includes(x))p.removed.push(x);});
+  renderEdit();
+}
+function restoreExp(id){ // 恢复：整组回到主列表末尾
+  const p=state.editPlan;
+  const i=p.removed.indexOf(id); if(i<0)return;
+  p.removed.splice(i,1);
+  (p.groups[id]||[]).forEach(m=>{const mi=p.removed.indexOf(m);if(mi>=0)p.removed.splice(mi,1);});
+  if(!p.kept.includes(id))p.kept.push(id);
+  if(!p.selected.includes(id))p.selected.push(id);
+  renderEdit();
+}
+function mergeGroup(fromId,toId){ // 把 fromId 整组（含成员）并入 toId
+  const p=state.editPlan;
+  const fi=p.kept.indexOf(fromId); if(fi<0)return;
+  p.kept.splice(fi,1);
+  const fromMembers=(p.groups[fromId]||[]).slice();
+  p.groups[toId]=(p.groups[toId]||[]).concat([fromId],fromMembers);
+  delete p.groups[fromId];
+}
+function outMember(mid){ // 成员移出本组 → 成为独立卡片
+  const p=state.editPlan;
+  for(const lid of Object.keys(p.groups)){
+    const arr=p.groups[lid],i=arr.indexOf(mid);
+    if(i>=0){
+      arr.splice(i,1);
+      p.kept.splice(p.kept.indexOf(lid)+1,0,mid);
+      if(!arr.length)delete p.groups[lid];
+      break;
+    }
+  }
+  renderEdit();
+}
+function ungroup(lid){ // 整组解散：成员插回组首之后
+  const p=state.editPlan; const arr=p.groups[lid]; if(!arr)return;
+  const li=p.kept.indexOf(lid);
+  arr.slice().reverse().forEach(m=>p.kept.splice(li+1,0,m));
+  delete p.groups[lid];
+  renderEdit();
+}
+function mergeSelected(){ // 勾选合并：所选 leaders 全部并入第一个
+  const p=state.editPlan;
+  const ids=p.kept.filter(id=>p.selected.includes(id));
+  if(ids.length<2)return;
+  ids.slice(1).forEach(id=>mergeGroup(id,ids[0]));
+  renderEdit();
+}
+function toggleSelect(id,on){
+  const p=state.editPlan;
+  const i=p.selected.indexOf(id);
+  if(on&&i<0)p.selected.push(id);
+  if(!on&&i>=0)p.selected.splice(i,1);
+  renderEdit();
+}
+function finishEdit(){ // 完成：按 plan 中"勾选且非成员"的组首重建 EXPS/BLOCKS；plan 本身不修改
+  const p = state.editPlan;
+  if(!p) return;
+
+  // editPlan 的 kept/selected/groups 始终停留在原始 G id 空间，不在本函数内修改，
+  // 这样从结果页"← 返回整理"时仍能看到全部经历（含未勾选）。
+  // _stash 保存 boot 时的全部原始 EXPS/BLOCKS（含未勾选、被合并成员），供多轮重建与编辑页取数。
+  const prevStash = p._stash || {EXPS:{}, BLOCKS:{}};
+  const stashEXPS = Object.assign({}, prevStash.EXPS);
+  const stashBLOCKS = Object.assign({}, prevStash.BLOCKS);
+  const snapshotInto = id => {
+    if(!stashEXPS[id] && EXPS[id]) stashEXPS[id] = EXPS[id];
+    if(!stashBLOCKS[id] && BLOCKS[id]) stashBLOCKS[id] = BLOCKS[id];
+  };
+  p.kept.forEach(gid => {
+    snapshotInto(gid);
+    (p.groups[gid] || []).forEach(snapshotInto);
+  });
+  Object.values(p.groups).forEach(arr => arr.forEach(snapshotInto)); // 防御孤儿成员
+  p._stash = {EXPS: stashEXPS, BLOCKS: stashBLOCKS};
+
+  const resolveExp = id => stashEXPS[id] || EXPS[id] || null;
+  const resolveBlocks = id => stashBLOCKS[id] || BLOCKS[id] || [];
+
+  // ---- 1. 入选组首 = 勾选 + 不是任何组的成员（保持 p.kept 顺序） ----
+  const allMembers = new Set();
+  Object.values(p.groups).forEach(arr => arr.forEach(m => allMembers.add(m)));
+  const selectedLeaders = p.kept.filter(gid =>
+    p.selected.includes(gid) && !allMembers.has(gid));
+
+  // ---- 2. 重建 EXPS / BLOCKS（新 key 用 G_ 前缀，与原始 G 区分） ----
+  const newEXPS = {};
+  const newBLOCKS = {};
+  selectedLeaders.forEach(gid => {
+    const leader = resolveExp(gid);
+    if(!leader) return;                     // 容错
+    const members = p.groups[gid] ? [gid, ...p.groups[gid]] : [gid];
+    const newId = 'G_' + gid;
+
+    // 新 title：单成员用原 title；多成员拼接全部成员 title（customTitles 优先）
+    let title = leader.title;
+    if(members.length > 1){
+      title = members.map(m => { const e = resolveExp(m); return e ? e.title : ''; })
+                     .filter(Boolean).join(' · ');
+      if(p.customTitles && p.customTitles[gid]){
+        title = p.customTitles[gid];
+      }
+    }
+
+    newEXPS[newId] = {
+      title,
+      time: leader.time,
+      tier: leader.tier,        // 用组首的 tier
+      score: leader.score,      // 用组首的 score
+      role: leader.role,
+      cardActions: members.flatMap(m => {
+        const e = resolveExp(m);
+        return e ? (e.cardActions || []).slice(0,1) : [];
+      }),
+      memberIds: members
+    };
+
+    // 新 BLOCKS：按成员顺序拼接所有 blocks（block 对象保持原引用，output_id 不变）
+    newBLOCKS[newId] = members.flatMap(m => resolveBlocks(m));
+  });
+
+  // ---- 3. 替换全局 EXPS / BLOCKS（plan 不动） ----
+  EXPS = newEXPS;
+  BLOCKS = newBLOCKS;
+
+  // ---- 4. 更新 state（order 用 G_ 新 key，与重建结果一致） ----
+  state.order = selectedLeaders.map(gid => 'G_' + gid);
+  state.deleted = [];
+  state.generated = true;
+  state.snapshot = snap();
+  state.editing = false;
+  state.cameFromEdit = true;   // 标记来自"自己给简历瘦身"整理
+
+  // ---- 5. 渲染 + 跳转 ----
+  // 用上传时保存的原始 bundle 重渲染左栏、顶部提示和底部报告（finishEdit 只重建了中栏 EXPS/BLOCKS）
+  if(state.lastBundle){
+    if(typeof renderOriginal === 'function') renderOriginal(state.lastBundle);
+    if(typeof renderReport === 'function') renderReport(state.lastBundle);
+    if(typeof renderMatchBanner === 'function') renderMatchBanner(state.lastBundle);
+  }
+  renderSlim();
+  updateBackEditBtn();
+  showView('view-result');
+  updateGenerateBtn();   // 其包装函数会顺带 saveHomeState() 持久化 editPlan
+  showToast('已按你的整理生成瘦身简历');
+}
+
+// ---- 事件委托（静态容器，绑定一次） ----
+document.getElementById('edit-list').addEventListener('change',e=>{
+  const cb=e.target.closest('[data-check]'); if(cb)toggleSelect(cb.dataset.check,cb.checked);
+});
+document.getElementById('edit-list').addEventListener('click',e=>{
+  const out=e.target.closest('[data-out]');
+  const ug=e.target.closest('[data-ungroup]');
+  if(out)outMember(out.dataset.out);
+  else if(ug)ungroup(ug.dataset.ungroup);
+});
+document.getElementById('ec-all').addEventListener('change',e=>{
+  const p=state.editPlan; if(!p)return;
+  if(e.target.checked){ p.kept.forEach(id=>{if(!p.selected.includes(id))p.selected.push(id);}); }
+  else{ p.selected=p.selected.filter(id=>!p.kept.includes(id)); }
+  renderEdit();
+});
+document.getElementById('btn-merge-group').addEventListener('click',mergeSelected);
+document.getElementById('edit-done').addEventListener('click',()=>{ if(state.editPlan)finishEdit(); });
+function leaveEdit(){ showView(state.editReturn==='result'?'view-result':'view-home'); }
+document.getElementById('edit-back').addEventListener('click',leaveEdit);
+document.getElementById('edit-cancel').addEventListener('click',leaveEdit);
+
+/* ================= 视图切换 ================= */
+function showView(id){
+  ['view-home','view-result','view-edit'].forEach(v=>{
+    const el=document.getElementById(v);
+    if(el) el.classList.toggle('active',v===id);
+  });
+  window.scrollTo(0,0);
+}
+document.getElementById('back-home-1').addEventListener('click',()=>{showView('view-home');updateGenerateBtn();});
+
+/* ================= sessionStorage 保留首页状态 ================= */
+// live 专用键（tf-live-home-v1）：与原型 tf-home-v2 的静态 E1-E6 模型隔离，防止串缓存
+function saveHomeState(){
+  try{
+    sessionStorage.setItem('tf-live-home-v1',JSON.stringify({
+      resume:state.resume,jd:state.jd,
+      scores:state.scores,checked:state.checked,preset:state.preset,
+      generated:state.generated,snapshot:state.snapshot,
+      editPlan:state.editPlan,order:state.order,deleted:state.deleted,
+      edits:state.edits
+    }));
+  }catch(e){}
+}
+function loadHomeState(){
+  let d=null;
+  try{d=JSON.parse(sessionStorage.getItem('tf-live-home-v1')||'null');}catch(e){}
+  if(!d)return false;
+  if(d.resume)state.resume=d.resume;
+  if(d.jd)state.jd=d.jd;
+  if(d.scores)state.scores=d.scores;
+  if(d.checked)state.checked=d.checked;
+  if(d.preset)state.preset=d.preset;
+  if(d.generated)state.generated=true;
+  if(d.snapshot)state.snapshot=d.snapshot;
+  if(d.editPlan)state.editPlan=d.editPlan;
+  if(Array.isArray(d.order))state.order=d.order;
+  if(Array.isArray(d.deleted))state.deleted=d.deleted;
+  if(d.edits) state.edits = d.edits;
+  return true;
+}
+// 状态变化时持久化（resume/jd 在 initPanel / sample / clear / input 处已改 state，统一在 updateGenerateBtn 时存）
+const _origUpdateGen=updateGenerateBtn;
+updateGenerateBtn=function(){saveHomeState();_origUpdateGen.apply(this,arguments);};
+
+/* ================= init（停在首页，不自动 boot）================= */
+function refreshUploadedExternal(kind){
+  const card=document.getElementById('card-'+kind);
+  if(!state[kind])return;
+  const loaded=card.querySelector('.loaded-box');
+  const drop=card.querySelector('.dropzone');
+  const paste=card.querySelector('.paste-area');
+  const preview=document.getElementById(kind+'-lb-preview');
+  loaded.classList.remove('hidden');
+  drop.classList.add('hidden');
+  paste.classList.add('hidden');
+  const tag=card.querySelector('.upload-card-head .tag');
+  tag.textContent='已上传';tag.classList.add('ok');
+  document.getElementById(kind+'-lb-name').textContent=state[kind].name;
+  document.getElementById(kind+'-lb-meta').textContent=state[kind].text.length+' 字符';
+  preview.textContent=state[kind].text;
+  uploadEditState[kind]={editing:false,original:state[kind].text};
+}
+const restored=loadHomeState();
+renderDims();
+syncPresetActive();
+if(restored){
+  if(state.resume)refreshUploadedExternal('resume');
+  if(state.jd)refreshUploadedExternal('jd');
+}
+updateGenerateBtn();
+</script>
+</body>
+</html>

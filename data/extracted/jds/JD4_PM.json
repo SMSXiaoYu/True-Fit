@@ -1,0 +1,70 @@
+{
+  "jd_id": "JD4_PM",
+  "version": "1.0",
+  "generated_at": "2026-09-17T10:00:00Z",
+  "title": "产品经理",
+  "requirements": {
+    "hard": {
+      "education": "本科及以上",
+      "experience": "1-3年产品经验（优秀应届/实习可放宽）",
+      "preferred": ["有产品运营经验"]
+    },
+    "skills": [
+      { "item": "PRD撰写", "weight": 3 },
+      { "item": "原型设计（Axure/Xmind/Office）", "weight": 3 },
+      { "item": "AI工具（调研/PRD/分析/复盘）", "weight": 3 },
+      { "item": "数据分析", "weight": 2 },
+      { "item": "需求拆解", "weight": 2 }
+    ],
+    "responsibilities": [
+      { "item": "需求与规划", "weight": 3 },
+      { "item": "文档与原型", "weight": 3 },
+      { "item": "调研分析", "weight": 2 },
+      { "item": "协同交付", "weight": 2 },
+      { "item": "数据复盘", "weight": 2 }
+    ],
+    "industry": {
+      "required": null,
+      "preferred": ["产品运营", "用户增长", "0到1经验"]
+    },
+    "level": {
+      "years": "1-3年",
+      "title": null
+    }
+  },
+  "source_store": {
+    "D1": "需求与规划:负责产品核心模块的长短期规划，收集并梳理用户需求与反馈，制定需求优先级与迭代Roadmap。",
+    "D2": "文档与原型:独立完成PRD撰写、原型设计与交互逻辑优化，主导需求评审，跟踪设计与研发实现、弥合偏差。",
+    "D3": "调研分析:借助AI工具完成行业/竞品研究与用户需求拆解，输出结构化分析报告与产品优化方案。",
+    "D4": "协同交付:联动视觉、研发、测试、运营，评估方案、跟踪进度、控制风险，保障项目按期上线。",
+    "D5": "数据复盘:上线后监控数据与用户反馈，分析问题痛点并持续优化;完成迭代复盘，沉淀方法论。",
+    "R1": "本科及以上学历，1~3年产品相关经验(优秀应届生/有产品实习经历可放宽)。",
+    "R2": "有产品运营相关工作经验者优先。",
+    "R3": "熟悉产品全流程(原型、PRD、需求拆解、版本迭代)，能独立落地模块迭代。",
+    "R4": "熟练运用AI工具赋能调研、PRD、分析、复盘等全流程工作，并主动探索AI在产品场景中的落地用法。",
+    "R5": "沟通协作与项目推进能力强，能精准对接研发/运营并推动需求落地。",
+    "R6": "逻辑清晰、自驱力强;熟练使用Axure/Xmind/Office等常用产品工具。",
+    "B1": "有产品运营、用户增长或活动运营经验;有从0到1或持续迭代完整产品模块的经验。"
+  },
+  "source_map": {
+    "hard.education": ["R1"],
+    "hard.experience": ["R1"],
+    "hard.preferred": ["R2"],
+
+    "skills[0]": ["D2", "R3"],
+    "skills[1]": ["D2", "R6"],
+    "skills[2]": ["D3", "R4"],
+    "skills[3]": ["D5"],
+    "skills[4]": ["R3"],
+
+    "responsibilities[0]": ["D1"],
+    "responsibilities[1]": ["D2"],
+    "responsibilities[2]": ["D3"],
+    "responsibilities[3]": ["D4"],
+    "responsibilities[4]": ["D5"],
+
+    "industry.preferred": ["R2", "B1"],
+
+    "level.years": ["R1"]
+  }
+}

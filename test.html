@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>TrueFit · 前后端连通性测试</title>
+<style>
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+       background:#f6f6f8;color:#1f2329;padding:40px;max-width:900px;margin:0 auto}
+  h1{font-size:22px;margin-bottom:6px}
+  .sub{color:#8a8f98;font-size:13px;margin-bottom:24px}
+  button{background:#5e6ad2;color:#fff;border:none;border-radius:8px;
+         padding:10px 20px;font-size:14px;cursor:pointer;margin-right:10px;margin-bottom:10px}
+  button:hover{background:#4f5cc0}
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;
+        padding:20px;margin-top:20px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .ok{color:#16a34a;font-weight:600}
+  .err{color:#dc2626;font-weight:600}
+  pre{background:#f8f8fa;border-radius:8px;padding:14px;font-size:12.5px;
+      overflow:auto;max-height:400px;line-height:1.6}
+  .kv{display:flex;gap:10px;padding:6px 0;font-size:13px;border-bottom:1px dashed #eee}
+  .kv b{color:#4b5563;min-width:140px}
+</style>
+</head>
+<body>
+  <h1>TrueFit · 前后端连通性测试</h1>
+  <div class="sub">确保 <code>python server.py</code> 已经在跑（http://localhost:8000）</div>
+
+  <button onclick="testPing()">1. 探活 /api/ping</button>
+  <button onclick="testFiles()">2. 看有哪些数据 /api/files</button>
+  <button onclick="testBundle()">3. 拉完整 bundle</button>
+
+  <div class="card" id="out">点上面按钮试试。</div>
+
+<script>
+const API = 'http://localhost:8000';
+const out = document.getElementById('out');
+
+function show(html){ out.innerHTML = html; }
+function ok(msg){ return `<div class="ok">✅ ${msg}</div>`; }
+function err(msg){ return `<div class="err">❌ ${msg}</div>`; }
+
+async function testPing(){
+  show('请求中…');
+  try{
+    const r = await fetch(API + '/api/ping');
+    const d = await r.json();
+    show(ok('后端活着') + `<pre>${JSON.stringify(d, null, 2)}</pre>`);
+  }catch(e){
+    show(err('连不上后端：' + e.message) +
+         '<p style="font-size:13px;color:#8a8f98">检查：1) 是否跑了 <code>python server.py</code>；2) 端口 8000 是否被占。</p>');
+  }
+}
+
+async function testFiles(){
+  show('请求中…');
+  try{
+    const r = await fetch(API + '/api/files');
+    const d = await r.json();
+    let html = ok('拿到文件清单');
+    html += '<div class="card" style="margin-top:12px"><b>data/extracted/resumes/</b><pre>'
+          + (d.extracted.resumes.join('\n') || '（空）') + '</pre></div>';
+    html += '<div class="card"><b>data/extracted/jds/</b><pre>'
+          + (d.extracted.jds.join('\n') || '（空）') + '</pre></div>';
+    html += '<div class="card"><b>data/output/</b><pre>'
+          + (d.output.join('\n') || '（空）') + '</pre></div>';
+    show(html);
+  }catch(e){
+    show(err('失败：' + e.message));
+  }
+}
+
+async function testBundle(){
+  show('请求中…（bundle 会一次拉全 5 份数据）');
+  try{
+    const r = await fetch(API + '/api/bundle/A/JD1_backend');
+    if(!r.ok){
+      const d = await r.json();
+      show(err('后端返回 ' + r.status) + `<pre>${JSON.stringify(d, null, 2)}</pre>`);
+      return;
+    }
+    const d = await r.json();
+
+    const resumeExps = d.resume?.experiences || [];
+    const jdReqs = d.jd?.requirements || {};
+    const clusters = d.clusters?.clusters || [];
+    const changes = d.changes?.changes || [];
+    const reportLen = (d.report_markdown || '').length;
+
+    let html = ok('bundle 拉取成功！');
+    html += `<div class="card">
+      <div class="kv"><b>简历经历数</b><span>${resumeExps.length} 条</span></div>
+      <div class="kv"><b>JD 要求</b><span>${Object.keys(jdReqs).length} 组（${Object.keys(jdReqs).join(', ')}）</span></div>
+      <div class="kv"><b>聚类分组</b><span>${clusters.length} 组</span></div>
+      <div class="kv"><b>changes 文件</b><span>${d.changes_file}</span></div>
+      <div class="kv"><b>changes 条数</b><span>${changes.length} 条</span></div>
+      <div class="kv"><b>报告文件</b><span>${d.report_file}（${reportLen} 字符）</span></div>
+    </div>`;
+
+    html += `<div class="card">
+      <b>第一条 change 长这样（前端就用这个结构渲染）：</b>
+      <pre>${JSON.stringify(changes[0], null, 2)}</pre>
+    </div>`;
+
+    html += `<div class="card">
+      <b>简历第一条经历（对应原型里的 EXPS.E1）：</b>
+      <pre>${JSON.stringify(resumeExps[0], null, 2)}</pre>
+    </div>`;
+
+    html += `<div class="card">
+      <b>报告前 20 行（Markdown）：</b>
+      <pre>${(d.report_markdown || '').split('\n').slice(0,20).join('\n')}</pre>
+    </div>`;
+
+    show(html);
+  }catch(e){
+    show(err('失败：' + e.message));
+  }
+}
+</script>
+</body>
+</html>
