@@ -15,6 +15,7 @@ provider 选择优先级（高 → 低）：
 import json
 import os
 import re
+import threading
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -38,9 +39,14 @@ _PROMPTS_DIR = Path(__file__).resolve().parents[1] / "prompts"
 
 DEFAULT_PROVIDER = "deepseek"
 
+# 线程局部用量存储：call_llm 把当前线程最近一次的 usage 存这里，
+# run_upload 在同线程（或 worker 线程内）调 get_last_usage() 取出。
+# 用 thread-local 是因为调用1、2 并行跑在不同线程，互不覆盖。
+_thread_local = threading.local()
+
 
 def call_llm(system_prompt, user_prompt, provider=None, model=None):
-    """调用 LLM，返回 assistant 文本内容。
+    """调用 LLM，返回 assistant 文本内容（usage 另存到线程局部，见 get_last_usage）。
 
     :param provider: "deepseek" 或 "ollama"；None 时读环境变量 LLM_PROVIDER，再缺省 deepseek
     :param model:    覆盖该后端的默认模型名（None 用各 Provider 默认值）
@@ -48,7 +54,17 @@ def call_llm(system_prompt, user_prompt, provider=None, model=None):
     重试 / 超时 / 报错口径由具体 Provider 负责。
     """
     name = provider or os.environ.get("LLM_PROVIDER", DEFAULT_PROVIDER)
-    return get_provider(name, model=model).chat(system_prompt, user_prompt)
+    text, usage = get_provider(name, model=model).chat(system_prompt, user_prompt)
+    _thread_local.last_usage = usage
+    return text
+
+
+def get_last_usage():
+    """返回当前线程最近一次 call_llm 的 usage（{"prompt","completion","total"} 或 None）。
+
+    必须在 call_llm 所在的同一线程内调用才能取到值（调用1、2 并行时各自的 worker 线程）。
+    """
+    return getattr(_thread_local, "last_usage", None)
 
 
 # ============ 通用工具 ============

@@ -72,7 +72,8 @@ input,textarea{font-family:inherit}
 #view-home{flex-direction:column;height:100vh}
 .home-main{flex:1;display:flex;flex-direction:column;align-items:center;padding:46px 40px 60px;overflow:auto}
 .home-hero{text-align:center;margin-bottom:34px}
-.home-hero h1{font-size:26px;font-weight:700;letter-spacing:.3px}
+.home-hero .hero-pain{color:#4b5563;font-size:19px;line-height:1.8;margin:0}
+.home-hero h1{font-size:30px;font-weight:700;letter-spacing:.3px;line-height:1.5;color:#1f2329;margin:32px 0 0}
 .home-hero p{color:var(--muted);margin-top:8px;font-size:14px}
 .upload-row{display:flex;gap:28px;width:100%;max-width:1040px}
 .upload-card{
@@ -584,6 +585,40 @@ input[type=range]:disabled::-webkit-slider-thumb{border-color:#b8bdc7;background
   z-index:200;opacity:0;pointer-events:none;transition:.2s;
 }
 .toast.show{opacity:1}
+
+/* ============ ⓘ 配置说明侧边面板 ============ */
+.sec-title-row{display:flex;align-items:center;gap:6px}
+.sec-info{
+  width:16px;height:16px;border-radius:50%;flex:none;
+  border:1.5px solid #a3b0d6;color:#8494c6;background:transparent;
+  font-size:10px;font-style:italic;font-weight:700;line-height:1;
+  font-family:Georgia,'Times New Roman',serif;
+  display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;padding:0;transition:.15s;
+}
+.sec-info:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+/* 贴在配置抽屉（360px）左侧的浮动说明面板，宽 320px，不遮挡抽屉；高度随内容收缩 */
+.info-panel{
+  position:fixed;top:10px;right:368px;width:320px;
+  max-height:calc(100vh - 20px);
+  background:#fff;border-radius:14px;box-shadow:var(--shadow-lg);
+  padding:22px 22px 18px;box-sizing:border-box;overflow-y:auto;
+  z-index:44;opacity:0;transform:translateX(24px);
+  pointer-events:none;transition:opacity .22s ease, transform .22s ease;
+}
+.info-panel.show{opacity:1;transform:translateX(0);pointer-events:auto}
+.info-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.info-head h3{font-size:15px;font-weight:600;color:var(--text)}
+.info-close{
+  width:26px;height:26px;border:none;background:transparent;border-radius:6px;
+  color:var(--muted);font-size:15px;cursor:pointer;flex:none;transition:.15s;
+}
+.info-close:hover{background:#f1f1f4;color:var(--text)}
+.info-lead{font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:14px}
+.info-item{margin-bottom:13px}
+.info-item b{display:block;font-size:13px;color:var(--text);font-weight:600;margin-bottom:2px}
+.info-item span{display:block;font-size:12.5px;color:var(--text-2);line-height:1.65}
+.info-item:last-child{margin-bottom:0}
 </style>
 </head>
 <body>
@@ -597,8 +632,8 @@ input[type=range]:disabled::-webkit-slider-thumb{border-color:#b8bdc7;background
 
   <div class="home-main">
     <div class="home-hero">
-      <h1>按目标岗位，给简历瘦身</h1>
-      <p>上传完整简历、目标 JD，调整配置，完成简历瘦身。</p>
+      <p class="hero-pain">简历优秀，但海投却杳无音信？<br>履历丰富，却要为每个岗位逐一调整？<br>多少人，因简历调整繁琐，而被埋没了才华？</p>
+      <h1>不编造、不美化，只把已有的经历，排到最该被看到的位置。</h1>
     </div>
 
     <div class="upload-row">
@@ -713,13 +748,13 @@ input[type=range]:disabled::-webkit-slider-thumb{border-color:#b8bdc7;background
     <div class="drawer-body">
       <!-- 维度勾选 -->
       <section class="cfg-section">
-        <div class="sec-title">打分维度</div>
+        <div class="sec-title sec-title-row">打分维度<button class="sec-info" data-info="dims" type="button" aria-label="打分维度说明">i</button></div>
         <div id="dim-list"></div>
       </section>
 
       <!-- 预设系列 -->
       <section class="cfg-section">
-        <div class="sec-title">预设系列</div>
+        <div class="sec-title sec-title-row">预设系列<button class="sec-info" data-info="preset" type="button" aria-label="预设系列说明">i</button></div>
         <div class="preset-grid" id="preset-grid">
           <button class="preset-btn" data-preset="auto">系统自动判断<div class="preset-scores">按 JD 智能匹配</div></button>
           <button class="preset-btn" data-preset="general">通用<div class="preset-scores">20 / 45 / 15 / 10</div></button>
@@ -895,6 +930,15 @@ input[type=range]:disabled::-webkit-slider-thumb{border-color:#b8bdc7;background
 <div class="loading-mask" id="loading">
   <div class="spinner"></div>
   <div class="lm-txt" id="loading-txt">正在按当前配置生成瘦身简历…</div>
+</div>
+
+<!-- ⓘ 配置说明侧边面板（贴抽屉左侧，不遮挡） -->
+<div class="info-panel" id="info-modal" role="dialog" aria-labelledby="info-title">
+  <div class="info-head">
+    <h3 id="info-title">说明</h3>
+    <button class="info-close" id="info-close" type="button" aria-label="关闭">✕</button>
+  </div>
+  <div class="info-body" id="info-body"></div>
 </div>
 
 <script>
@@ -1234,7 +1278,7 @@ document.querySelectorAll('.preset-btn').forEach(btn=>{
 const drawer=document.getElementById('drawer');
 const cfgTrigger=document.getElementById('cfg-trigger');
 function openDrawer(){state.drawerOpen=true;drawer.classList.add('open');cfgTrigger.classList.add('open');cfgTrigger.innerHTML='<span>✕</span>收起配置';updateGenerateBtn();}
-function closeDrawer(){state.drawerOpen=false;drawer.classList.remove('open');cfgTrigger.classList.remove('open');cfgTrigger.innerHTML='<span>⚙</span>进入瘦身配置';updateGenerateBtn();}
+function closeDrawer(){state.drawerOpen=false;drawer.classList.remove('open');cfgTrigger.classList.remove('open');cfgTrigger.innerHTML='<span>⚙</span>进入瘦身配置';updateGenerateBtn();const ip=document.getElementById('info-modal');if(ip)ip.classList.remove('show');}
 cfgTrigger.addEventListener('click',()=>state.drawerOpen?closeDrawer():openDrawer());
 document.getElementById('drawer-close').addEventListener('click',closeDrawer);
 
@@ -1931,6 +1975,92 @@ if(restored){
 updateGenerateBtn();
 renderOriginal();
 renderSlim();
+
+/* ================= ⓘ 配置说明弹窗 ================= */
+(function(){
+  const INFO_CONTENT = {
+    dims: {
+      title: '打分维度说明',
+      lead: '系统会从 4 个维度评估每条经历，加权后得出相关性分数。',
+      items: [
+        ['【技能】', '简历技能栈与 JD 技能要求的命中程度。'],
+        ['【内容】', '经历职责与 JD 职责的语义匹配程度。'],
+        ['【行业】', '经历行业与 JD 行业要求的相关程度。'],
+        ['【资历】', '经历资历档位与 JD 年限/级别的匹配程度。'],
+        ['【权重说明】', '权重按百分比计算，自动归一化。<br>取消勾选 = 该维度不参与打分。'],
+      ],
+    },
+    preset: {
+      title: '预设系列说明',
+      lead: '预设是四维度的权重模板。选择后，权重自动填入，可再调整。',
+      items: [
+        ['【系统自动判断】', '分析 JD，自动选择最接近的预设。'],
+        ['【通用】', '20 / 45 / 15 / 10（内容权重最高）'],
+        ['【技术】', '30 / 30 / 10 / 30（技能资历并重）'],
+        ['【管理】', '20 / 35 / 10 / 35（偏重资历）'],
+        ['【校招】', '30 / 30 / 5 / 5（弱化行业资历）'],
+        ['【用户自定义】', '自由调整分数。'],
+      ],
+    },
+  };
+  const panel = document.getElementById('info-modal');
+  const titleEl = document.getElementById('info-title');
+  const bodyEl = document.getElementById('info-body');
+  // 面板对齐：打分维度说明顶端 = 抽屉"打分维度"标题顶端；预设系列说明底端 = 抽屉底部主按钮底端
+  function positionPanel(key){
+    if(key === 'dims'){
+      const anchor = document.querySelector('.sec-info[data-info="dims"]').closest('.sec-title');
+      if(anchor){
+        panel.style.top = anchor.getBoundingClientRect().top + 'px';
+        panel.style.bottom = 'auto';
+      }
+    }else{
+      const btn = document.getElementById('btn-save-config') || document.getElementById('btn-gen-drawer');
+      if(btn){
+        // clientHeight = fixed 定位的真实基准（不含横向滚动条），与 getBoundingClientRect 同一坐标系
+        const vh = document.documentElement.clientHeight;
+        panel.style.bottom = Math.max(vh - btn.getBoundingClientRect().bottom, 10) + 'px';
+        panel.style.top = 'auto';
+      }
+    }
+  }
+  function openInfo(key){
+    const c = INFO_CONTENT[key];
+    if(!c) return;
+    titleEl.textContent = c.title;
+    let html = '<div class="info-lead">' + c.lead + '</div>';
+    c.items.forEach(it => {
+      html += '<div class="info-item"><b>' + it[0] + '</b><span>' + it[1] + '</span></div>';
+    });
+    bodyEl.innerHTML = html;
+    currentKey = key;
+    positionPanel(key);
+    panel.classList.add('show');
+  }
+  function closeInfo(){ panel.classList.remove('show'); currentKey = null; }
+  let currentKey = null;
+  document.querySelectorAll('.sec-info').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // 同一个 ⓘ 再点一次 → 收起；另一个 ⓘ → 切换内容
+      if(currentKey === btn.dataset.info && panel.classList.contains('show')){
+        closeInfo();
+        return;
+      }
+      openInfo(btn.dataset.info);
+    });
+  });
+  document.getElementById('info-close').addEventListener('click', closeInfo);
+  // 点面板外关闭。抽屉内点击除外（用户可边看说明边调参）；点另一个 ⓘ 只切换内容
+  document.addEventListener('click', e => {
+    if(!panel.classList.contains('show')) return;
+    if(panel.contains(e.target)) return;
+    if(e.target.closest('.sec-info')) return;
+    if(e.target.closest('#drawer')) return;
+    closeInfo();
+  });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeInfo(); });
+  window.addEventListener('resize', () => { if(currentKey && panel.classList.contains('show')) positionPanel(currentKey); });
+})();
 </script>
 </body>
 </html>

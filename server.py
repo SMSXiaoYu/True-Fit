@@ -9,6 +9,7 @@
 默认监听 http://localhost:8000
 """
 import json
+import threading
 from pathlib import Path
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
@@ -30,12 +31,49 @@ def read_json(path: Path):
 # ---------- 上传任务 ----------
 import os
 import time
-import uuid
+import hashlib
 import threading
 from werkzeug.utils import secure_filename
 
 JOBS_DIR = PROJECT_ROOT / "data" / "jobs"
 JOBS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def compute_fingerprint(resume_text: str, jd_text: str) -> dict:
+    """计算输入指纹。
+
+    - resume_hash / jd_hash：各自独立的 SHA-256（截 16 位 hex）
+    - fingerprint：组合指纹（截 24 位 hex），用作 job_id
+    - 只含简历+JD 文本，不含配置（配置只影响规则环节，不耗 token）
+    """
+    resume_hash = hashlib.sha256(resume_text.encode("utf-8")).hexdigest()[:16]
+    jd_hash = hashlib.sha256(jd_text.encode("utf-8")).hexdigest()[:16]
+    fingerprint = hashlib.sha256(
+        (resume_hash + "|" + jd_hash).encode("utf-8")
+    ).hexdigest()[:24]
+    return {"resume_hash": resume_hash, "jd_hash": jd_hash, "fingerprint": fingerprint}
+
+
+def _find_cached_job(resume_hash: str, jd_hash: str):
+    """遍历 data/jobs/ 下的 meta.json，按指纹找已完成的任务。
+
+    返回 job_id；未命中返回 None。旧格式任务（时间戳命名、无指纹字段）不会误命中。
+    """
+    if not JOBS_DIR.exists():
+        return None
+    for job_dir in JOBS_DIR.iterdir():
+        meta_path = job_dir / "meta.json"
+        if not meta_path.exists():
+            continue
+        try:
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if (meta.get("resume_hash") == resume_hash
+                and meta.get("jd_hash") == jd_hash
+                and meta.get("status") == "done"):
+            return job_dir.name
+    return None
 
 # 内存里记活跃线程，避免 GC 提前回收
 _ACTIVE_THREADS = {}
@@ -106,8 +144,25 @@ def api_upload():
     if not jd_text:
         return jsonify({"error": "JD 内容为空"}), 400
 
-    # 生成 job_id
-    job_id = time.strftime("%Y%m%d_%H%M%S_") + uuid.uuid4().hex[:6]
+    # 指纹 = 输入的身份证，直接用作 job_id
+    # 同一份简历+JD 不管传几次，job_id 都一样 → 天然复用缓存
+    fp = compute_fingerprint(resume_text, jd_text)
+    job_id = fp["fingerprint"]
+    job_dir = JOBS_DIR / job_id
+
+    # 先查缓存：job 目录已存在
+    if job_dir.exists():
+        try:
+            meta = json.loads((job_dir / "meta.json").read_text(encoding="utf-8"))
+        except Exception:
+            meta = {}
+        if meta.get("status") == "done":
+            # 已有完整产物 → 不跑 pipeline，零 token 直接返回
+            return jsonify({"job_id": job_id, "cached": True})
+        if meta.get("status") == "running":
+            # 正在跑 → 幂等返回，前端继续轮询，不重复启动线程
+            return jsonify({"job_id": job_id, "cached": False, "running": True})
+        # status=failed / 产物不完整 → 落到下面重跑
 
     # 启动后台线程
     def _worker():
@@ -115,7 +170,7 @@ def api_upload():
             import sys
             sys.path.insert(0, str(PROJECT_ROOT / "src"))
             from pipeline.run_upload import run_upload
-            run_upload(resume_text, jd_text, job_id)
+            run_upload(resume_text, jd_text, job_id, fingerprint=fp)
         except Exception as e:
             print(f"[job {job_id}] 失败：{e}")
         finally:
@@ -125,28 +180,39 @@ def api_upload():
     _ACTIVE_THREADS[job_id] = th
     th.start()
 
-    return jsonify({"job_id": job_id})
+    return jsonify({"job_id": job_id, "cached": False})
 
 
 @app.get("/api/job/<job_id>")
 def api_job(job_id):
-    """查任务进度。"""
-    meta_path = JOBS_DIR / job_id / "meta.json"
+    """查任务进度。返回 meta + logs（处理日志数组）。"""
+    job_dir = JOBS_DIR / job_id
+    meta_path = job_dir / "meta.json"
     if not meta_path.exists():
         return jsonify({"error": "任务不存在"}), 404
     try:
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
     except Exception:
-        return jsonify({"status": "running", "progress": "读取中…"})
+        return jsonify({"status": "running", "progress": "读取中…", "logs": []})
+
+    # 附加处理日志（logs.json，不存在则返回空数组）
+    logs_path = job_dir / "logs.json"
+    try:
+        logs = json.loads(logs_path.read_text(encoding="utf-8")) if logs_path.exists() else []
+    except Exception:
+        logs = []
+    meta["logs"] = logs if isinstance(logs, list) else []
     return jsonify(meta)
 
 
-@app.get("/api/result/<job_id>")
-def api_result(job_id):
-    """拿任务的最终产物。组装成前端 buildModels 需要的 bundle 格式。"""
+def _result_payload(job_id: str):
+    """组装某 job 的最终产物（/api/result 与 /api/cache 共用）。
+
+    返回 (jsonify 结果, None)；产物不完整/不存在时返回 (None, error response)。
+    """
     job_dir = JOBS_DIR / job_id
     if not job_dir.exists():
-        return jsonify({"error": "任务不存在"}), 404
+        return None, (jsonify({"error": "任务不存在"}), 404)
 
     def _read_json(name):
         p = job_dir / name
@@ -163,16 +229,49 @@ def api_result(job_id):
         if (job_dir / "report.md").exists() else ""
 
     if resume is None or jd is None:
-        return jsonify({"error": "产物不完整，任务可能未完成"}), 400
+        return None, (jsonify({"error": "产物不完整，任务可能未完成"}), 400)
 
-    return jsonify({
+    return (jsonify({
         "resume": resume,
         "jd": jd,
         "clusters": clusters,
         "changes": changes,
         "scored": scored,
         "report_markdown": report_md,
-    })
+    }), None)
+
+
+@app.get("/api/result/<job_id>")
+def api_result(job_id):
+    """拿任务的最终产物。组装成前端 buildModels 需要的 bundle 格式。"""
+    payload, err = _result_payload(job_id)
+    return err if err else payload
+
+
+@app.get("/api/cache")
+def api_cache():
+    """按输入指纹查缓存。
+
+    遍历 data/jobs/ 的 meta.json 比对指纹，命中返回与 /api/result 同构的产物，
+    未命中返回 {"found": false}。前端打开页面/点生成前先查这里，避免重复跑 LLM。
+    """
+    from flask import request
+
+    resume_hash = (request.args.get("resume_hash") or "").strip()
+    jd_hash = (request.args.get("jd_hash") or "").strip()
+
+    if not resume_hash or not jd_hash:
+        return jsonify({"error": "缺少 resume_hash 或 jd_hash"}), 400
+
+    job_id = _find_cached_job(resume_hash, jd_hash)
+    if not job_id:
+        return jsonify({"found": False})
+
+    payload, err = _result_payload(job_id)
+    if err:
+        # 目录在但产物不完整 → 视为未命中（下次 upload 会重跑）
+        return jsonify({"found": False})
+    return jsonify({"found": True, "job_id": job_id, "result": payload.get_json()})
 
 # ---------- 探活 ----------
 @app.get("/api/ping")
@@ -371,4 +470,22 @@ if __name__ == "__main__":
     print("  http://localhost:8000/api/files")
     print("  http://localhost:8000/api/bundle/A/JD1_backend")
     print("=" * 60)
-    app.run(host="127.0.0.1", port=8000, debug=True)
+
+    # bge-m3 模型预热：后台线程加载（约 20-30s），不阻塞服务启动。
+    # 否则首个上传任务的调用3（打分）要额外付 ~23s 模型加载时间。
+    def _warmup_model():
+        try:
+            from src.pipeline.embedding_utils import get_model
+            get_model()
+            print("[warmup] bge-m3 预热完成")
+        except Exception as e:
+            print(f"[warmup] 模型预热失败（不影响启动）: {e}")
+
+    threading.Thread(target=_warmup_model, daemon=True).start()
+
+    # debug 模式说明：
+    #   - 开发阶段可改回 debug=True（改代码自动重启，方便）
+    #   - 测量耗时 / 做性能优化时，务必用 debug=False（自动重载会重启进程，
+    #     模型预热失效、耗时被污染）；改代码后手动重启 server 即可
+    #   - 上线时同样用 debug=False
+    app.run(host="127.0.0.1", port=8000, debug=False)

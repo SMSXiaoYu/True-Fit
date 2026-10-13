@@ -51,8 +51,8 @@ class DeepSeekProvider(LLMProvider):
             )
         return OpenAI(api_key=api_key, base_url=BASE_URL, timeout=self.timeout)
 
-    def chat(self, system_prompt: str, user_prompt: str) -> str:
-        """调用 DeepSeek，返回 assistant 文本；失败按指数退避重试。"""
+    def chat(self, system_prompt: str, user_prompt: str):
+        """调用 DeepSeek，返回 (assistant 文本, usage)；失败按指数退避重试。"""
         client = self._get_client()
         last_err = None
         for attempt in range(1, self.max_retries + 1):
@@ -66,7 +66,15 @@ class DeepSeekProvider(LLMProvider):
                     temperature=0.2,
                     timeout=self.timeout,
                 )
-                return resp.choices[0].message.content
+                text = resp.choices[0].message.content
+                usage = None
+                if getattr(resp, "usage", None) is not None:
+                    usage = {
+                        "prompt": resp.usage.prompt_tokens,
+                        "completion": resp.usage.completion_tokens,
+                        "total": resp.usage.total_tokens,
+                    }
+                return text, usage
             except Exception as err:  # SDK 异常 / 超时 / 网络错误统一重试
                 last_err = err
                 if attempt < self.max_retries:

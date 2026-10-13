@@ -18,11 +18,12 @@ class LLMProvider(ABC):
     name = "base"
 
     @abstractmethod
-    def chat(self, system_prompt: str, user_prompt: str) -> str:
-        """传入 system / user 两段 prompt，返回 assistant 的文本输出。
+    def chat(self, system_prompt: str, user_prompt: str):
+        """传入 system / user 两段 prompt，返回 (assistant 文本, usage)。
 
         :param system_prompt: 系统指令（prompt 模板正文）
         :param user_prompt:    用户输入（简历 / JD 等待处理文本）
-        :return:               LLM 的文本输出
+        :return:               (text, usage) 元组；usage 为 {"prompt","completion","total"} 字典
+                               或 None（provider 不支持用量统计时）
         """
         raise NotImplementedError

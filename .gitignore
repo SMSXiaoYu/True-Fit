@@ -40,3 +40,21 @@ notes/GitHub_CounterPart/
 # ===== 临时文件 =====
 *.tmp
 *.log
+
+
+# 测试产物 / 本地文件（不上传）
+data/efficiency_test/
+data/extracted/jds/*.json
+data/extracted/resumes/*.json
+data/output/changes_*.json
+data/extracted/jds/token_test_*.json
+data/extracted/resumes/token_test_*.json
+data/output/changes_token_test_*.json
+
+# 临时 / 备份 HTML
+TrueFit 简旨 — 简历智能瘦身（Live 数据）.html
+index_live - 改首页前.html
+index_live（旧版）.html
+
+# 临时 md
+完整简历.md

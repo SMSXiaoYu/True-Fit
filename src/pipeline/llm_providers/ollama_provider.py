@@ -44,8 +44,8 @@ class OllamaProvider(LLMProvider):
         self.model = model or os.environ.get("OLLAMA_MODEL", DEFAULT_MODEL)
         self.timeout = timeout
 
-    def chat(self, system_prompt: str, user_prompt: str) -> str:
-        """非流式调用 POST /api/chat，返回 message.content。"""
+    def chat(self, system_prompt: str, user_prompt: str):
+        """非流式调用 POST /api/chat，返回 (message.content, usage)。"""
         url = f"{self.host}/api/chat"
         payload = {
             "model": self.model,
@@ -82,7 +82,15 @@ class OllamaProvider(LLMProvider):
 
         try:
             data = resp.json()
-            return data["message"]["content"]
+            text = data["message"]["content"]
+            prompt_tokens = data.get("prompt_eval_count") or data.get("prompt_tokens")
+            completion_tokens = data.get("eval_count") or data.get("completion_tokens")
+            usage = None
+            if prompt_tokens is not None or completion_tokens is not None:
+                p = int(prompt_tokens or 0)
+                c = int(completion_tokens or 0)
+                usage = {"prompt": p, "completion": c, "total": p + c}
+            return text, usage
         except ValueError as err:
             raise LLMError(f"Ollama 返回不是合法 JSON：{err}；原文前 200 字：{resp.text[:200]}")
         except KeyError as err:
