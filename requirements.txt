@@ -16,3 +16,8 @@ torch>=2.6                 # Windows/macOS 从 PyPI 装默认即 CPU 版；Linux
 
 pypdf
 python-docx
+
+# Web 服务（server.py）
+flask>=3.0
+flask-cors>=4.0         # 跨域支持
+numpy>=1.26             # bge-m3 向量计算（embedding_utils.py）
