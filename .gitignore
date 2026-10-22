@@ -9,6 +9,8 @@ __pycache__/
 venv/
 build/
 dist/
+src/
+server.py
 
 # ===== 编辑器 / IDE =====
 .obsidian/
@@ -18,21 +20,16 @@ dist/
 .DS_Store
 Thumbs.db
 
-# ===== 上传任务产物（每次上传生成，不进 git）=====
-data/jobs/
-
-# ===== 上传产物的"标准样本"保留，但"带时间戳的产物"不进 git =====
-data/original/resumes/王晓宇*.pdf
-data/extracted/resumes/2026*.json
-data/extracted/jds/2026*.json
-data/output/changes_2026*.json
-
 # ===== 备份文件 / 副本 =====
-*副本*.html
-*- 副本*.html
-*- 旧.html
-* - 旧.html
-*旧.html
+# 历史旧版本
+index_live - 改首页前.html
+index_live（旧版）.html
+index_live（最初版）.html
+TrueFit 简旨 — 简历智能瘦身（Live 数据）.html
+
+# 废弃 / 测试文件
+test.html
+mock_bulletins_map.json
 
 # ===== 竞品仓库（在 notes/ 里，是别人的代码，不进 git）=====
 notes/GitHub_CounterPart/
@@ -42,14 +39,8 @@ notes/GitHub_CounterPart/
 *.log
 
 
-# 测试产物 / 本地文件（不上传）
-data/efficiency_test/
-data/extracted/jds/*.json
-data/extracted/resumes/*.json
-data/output/changes_*.json
-data/extracted/jds/token_test_*.json
-data/extracted/resumes/token_test_*.json
-data/output/changes_token_test_*.json
+# 数据
+data/
 
 # 临时 / 备份 HTML
 TrueFit 简旨 — 简历智能瘦身（Live 数据）.html
@@ -58,3 +49,11 @@ index_live（旧版）.html
 
 # 临时 md
 完整简历.md
+
+# 视频
+*.mp4
+
+#图片
+*.jpg
+*.jpeg
+*.png
